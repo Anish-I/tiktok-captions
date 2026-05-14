@@ -9,9 +9,9 @@ tiktok-caps generate clip.mp4 --vibe "horror"
 
 ## Why
 
-Drag a vibe phrase ("horror", "luxury", "cottagecore witch tutorial") at a CLI; get a stylish caption file back in seconds. Twelve hand-tuned presets cover the common TikTok aesthetics; an LLM stylist (Together AI / Llama-4-Maverick) maps any free-form vibe to the closest preset; a keyword scorer is the offline fallback.
+Drag a vibe phrase ("horror", "luxury", "cottagecore witch tutorial") at a CLI; get a stylish caption file back in seconds. 23 hand-tuned presets cover the common TikTok aesthetics, including direct replicas of Submagic's named styles (Karaoke, Deep Diver, Pod P, Popline, Beasty, Youshaei, Mozi, Glitch Infinite, Seamless Bounce, Baby Earthquake, Bounce Label). An LLM stylist (Together AI / Llama-4-Maverick) maps any free-form vibe to the closest preset; a keyword scorer is the offline fallback.
 
-Built on patterns from the (private) smart-clip reference: ASS subtitle generation with proper BGR color encoding, font-size scaling vs video height, and a curated SIL-OFL font catalog.
+Built on patterns from the (private) smart-clip reference: ASS subtitle generation with proper BGR color encoding, font-size scaling vs video height, opaque-box (`BorderStyle=3`) pill captions, and a curated SIL-OFL font catalog.
 
 ## How it works
 
@@ -60,6 +60,8 @@ tiktok-caps pick "spooky witch tutorial"
 
 ## Preset gallery
 
+### Vibe presets (semantic, prompt-friendly)
+
 | presetId | Font | Use case |
 |---|---|---|
 | `horror` | Creepster | Spooky, gothic, halloween, scary stories |
@@ -73,8 +75,61 @@ tiktok-caps pick "spooky witch tutorial"
 | `storytelling` | Playfair Display | Narrative, drama, "once upon a time" |
 | `educational` | Poppins Bold | Tutorial, learn, lesson |
 | `wellness` | Roboto | Yoga, calm, mindful, health |
-| `cinematic` | Fira Sans Condensed Black | Trailer, epic, music video |
+| `cinematic` | Fira Sans Condensed | Trailer, epic, music video |
+
+### Editor-style presets (named, Submagic-inspired)
+
+| presetId | Font | Layout |
+|---|---|---|
+| `karaoke` | Montserrat Black | Bold caps with one word highlighted in lime pill (v2: rolls per word) |
+| `deep_diver` | Poppins | Dark lowercase inside cream sticker pill |
+| `pod_p` | Anton | Cyan/magenta/yellow chromatic split with CRT scanlines |
+| `popline` | Bebas Neue | Tall condensed white caps, stacked one word per line |
+| `beasty` | Montserrat Black | Clean MrBeast-style mixed case |
+| `youshaei` | Montserrat Black | White caps inside black box pill |
+| `mozi` | Anton | Two-line stacked neon lime caps |
+| `glitch_infinite` | Rubik | Yellow "New" pill + red glitch text below |
+| `bounce_label` | Rubik | Black caps inside yellow pill (single-line label) |
+| `seamless_bounce` | Rubik | "New" pill + lime "started" — bounce animation in v2 |
+| `baby_earthquake` | Rubik | "New" pill + lime "started" — earthquake/shake animation in v2 |
+
+### Localhost preview gallery
+
+```bash
+node scripts/preview-server.mjs
+# open http://127.0.0.1:5555 to see all 23 presets rendered with @font-face,
+# plus an interactive vibe-picker that calls /api/pick
+```
+
+## Compound-layout schema
+
+Presets can carry `preview` hints (preview-only metadata; ASS renderer ignores them):
+
+```ts
+preview: {
+  sampleText?: string;
+  lines?: PresetLine[];                // multi-element compositions
+  highlightWord?: { index, bg, color };// karaoke word highlight
+  stackWords?: boolean;                // popline mode
+  scanlines?: boolean;                 // CRT overlay (Pod P)
+}
+```
+
+Each `PresetLine` can override `primaryColor`, `outlineColor`, `borderStyle`, `fontFamily`, `textCase`, `scale`, and `bold` independently — used to express two-element compositions like Seamless Bounce ("yellow-pill on line 1" + "lime text on line 2").
+
+## ASS output features
+
+- `BorderStyle=1` (outline, default) — text stroke + drop shadow
+- `BorderStyle=3` (opaque box) — sticker pill captions; `BackColour` is auto-set to `OutlineColour` for clean rendering
+- BGR color encoding (`&HAABBGGRR`) and font-size scaling vs video height — both ported from the smart-clip reference
 
 ## Status
 
-v0.1 ships clean per-cue ASS rendering. Per-word highlight animation, gradient text, and direct video burn-in are deferred to v0.2.
+v0.1 ships:
+- 23 static presets with compound-layout gallery support
+- Clean per-cue ASS rendering with both outline + box styles
+- Bundled 17 SIL-OFL/Apache font families (~3.6 MB)
+- localhost preview gallery with `@font-face`, scanlines, chromatic aberration, and karaoke word-highlight
+- 40 vitest specs (all green)
+
+Deferred to v0.2: word-by-word highlight rendered in ASS, animation effects (bounce, earthquake, glitch motion), gradient text via SVG+alphamerge, video burn-in.

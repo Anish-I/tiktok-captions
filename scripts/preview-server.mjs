@@ -49,88 +49,169 @@ function fontFaceCss() {
   return blocks.join('\n');
 }
 
+const SAMPLE_BY_PRESET = {
+  horror: 'A WITCH lurked in the dark.',
+  luxury: 'Champagne, please.',
+  comedy: 'WAIT FOR IT...',
+  gaming: 'GG NO RE',
+  fitness: 'NO DAYS OFF',
+  motivational: 'STAY HUNGRY',
+  news: 'BREAKING: details incoming',
+  podcast: 'Welcome back, friends',
+  storytelling: 'Once upon a time...',
+  educational: 'Step 1 of 3',
+  wellness: 'Inhale. Exhale.',
+  cinematic: 'IN A WORLD',
+  karaoke: 'TO GET STARTED',
+  deep_diver: 'to get started',
+  pod_p: 'TO GET',
+  popline: 'TO GET STARTED',
+  beasty: 'To get STARTED',
+  youshaei: 'TO GET STARTED',
+  mozi: 'TO GET STARTED',
+  glitch_infinite: 'STARTED',
+  bounce_label: 'NEW',
+  seamless_bounce: 'New started',
+  baby_earthquake: 'New started',
+};
+
+const BASE_FONT_PX = 36;
+
+function applyTextCase(text, mode) {
+  switch (mode) {
+    case 'uppercase':  return text.toUpperCase();
+    case 'lowercase':  return text.toLowerCase();
+    case 'capitalize': return text.replace(/\b\w/g, c => c.toUpperCase());
+    default:           return text;
+  }
+}
+
+/** Build the inline CSS for a styled caption span based on a SubtitleStyle-like object. */
+function captionCss(style, scale = 1) {
+  const fontWeight = style.bold || /Black|ExtraBold/.test(style.fontFamily) ? 900 : 600;
+  const cssFontFamily = style.fontFamily === 'Montserrat Black' ? 'Montserrat' : style.fontFamily;
+  const oc = style.outlineColor === 'transparent' ? null : style.outlineColor;
+  const isBox = style.borderStyle === 'box';
+  const chromatic = style.effects?.chromaticAberration;
+  const glitchOffset = style.effects?.glitchOffset;
+  const px = Math.round(BASE_FONT_PX * scale);
+
+  let modeCss;
+  if (chromatic) {
+    modeCss = `text-shadow:
+        -2px 0 #00FFFF,
+         2px 0 #FF1493,
+         0 2px #FFFF00,
+         0 0 0 #000;`;
+  } else if (glitchOffset) {
+    modeCss = `text-shadow:
+        3px 3px 0 ${glitchOffset},
+        ${oc ? `-3px -3px 0 ${oc},` : ''}
+        0 0 8px ${style.shadowColor};
+      ${oc ? `-webkit-text-stroke: 2px ${oc}; paint-order: stroke fill;` : ''}`;
+  } else if (isBox) {
+    modeCss = `background-color: ${oc ?? '#000'};
+      padding: 6px 16px;
+      border-radius: 10px;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      box-shadow: 0 6px 18px ${style.shadowColor};`;
+  } else if (oc) {
+    modeCss = `-webkit-text-stroke: 3px ${oc};
+      paint-order: stroke fill;
+      text-shadow: ${style.showShadow ? `0 3px 10px ${style.shadowColor}` : 'none'};`;
+  } else {
+    modeCss = `text-shadow: ${style.showShadow ? `0 3px 10px ${style.shadowColor}` : 'none'};`;
+  }
+
+  return `font-family: '${cssFontFamily}', sans-serif;
+    font-weight: ${fontWeight};
+    font-style: ${style.italic ? 'italic' : 'normal'};
+    color: ${style.primaryColor};
+    font-size: ${px}px;
+    letter-spacing: 0.4px;
+    line-height: 1.12;
+    display: inline-block;
+    ${modeCss}`;
+}
+
+/** Merge a PresetLine onto a base SubtitleStyle. */
+function mergeLine(base, line) {
+  return {
+    ...base,
+    ...(line.primaryColor && { primaryColor: line.primaryColor }),
+    ...(line.outlineColor && { outlineColor: line.outlineColor }),
+    ...(line.shadowColor && { shadowColor: line.shadowColor }),
+    ...(line.fontFamily && { fontFamily: line.fontFamily }),
+    ...(line.textCase && { textCase: line.textCase }),
+    ...(line.borderStyle && { borderStyle: line.borderStyle }),
+    ...(line.bold !== undefined && { bold: line.bold }),
+  };
+}
+
+function renderSpan(htmlBody, style, scale = 1) {
+  return `<span class="caption" style="${captionCss(style, scale).replace(/\s+/g, ' ')}">${htmlBody}</span>`;
+}
+
+/** Wrap one word with its own highlight pill (karaoke-style). */
+function applyHighlightWord(text, hint) {
+  const words = text.split(' ');
+  const idx = hint.index;
+  if (!words[idx]) return escapeHtml(text);
+  const before = words.slice(0, idx).map(escapeHtml).join(' ');
+  const after  = words.slice(idx + 1).map(escapeHtml).join(' ');
+  const hl = `<span style="
+    background:${hint.bg};
+    color:${hint.color ?? '#0A0A0A'};
+    -webkit-text-stroke: 0;
+    text-shadow: none;
+    padding: 0 0.22em;
+    border-radius: 0.14em;
+    display: inline-block;
+    line-height: 1;
+  ">${escapeHtml(words[idx])}</span>`;
+  return [before, hl, after].filter(s => s).join(' ');
+}
+
+function wrapLine(spanHtml) {
+  return `<div class="caption-line">${spanHtml}</div>`;
+}
+
+function renderCardBody(preset) {
+  const base = preset.style;
+  const hints = preset.preview ?? {};
+
+  // Multi-line composition takes precedence.
+  if (hints.lines && hints.lines.length > 0) {
+    return hints.lines.map(line => {
+      const merged = mergeLine(base, line);
+      const cased = applyTextCase(line.text, merged.textCase);
+      return wrapLine(renderSpan(escapeHtml(cased), merged, line.scale ?? 1));
+    }).join('');
+  }
+
+  let text = hints.sampleText ?? SAMPLE_BY_PRESET[preset.id] ?? 'Sample caption text';
+  text = applyTextCase(text, base.textCase);
+
+  if (hints.stackWords) {
+    return text.split(/\s+/).filter(Boolean)
+      .map(w => wrapLine(renderSpan(escapeHtml(w), base)))
+      .join('');
+  }
+
+  if (hints.highlightWord) {
+    return wrapLine(renderSpan(applyHighlightWord(text, hints.highlightWord), base));
+  }
+
+  return wrapLine(renderSpan(escapeHtml(text), base));
+}
+
 function renderHTML() {
   const css = fontFaceCss();
   const cards = PRESET_CATALOG.map(p => {
     const s = p.style;
-    const sampleByPreset = {
-      horror: 'A WITCH lurked in the dark.',
-      luxury: 'Champagne, please.',
-      comedy: 'WAIT FOR IT...',
-      gaming: 'GG NO RE',
-      fitness: 'NO DAYS OFF',
-      motivational: 'STAY HUNGRY',
-      news: 'BREAKING: details incoming',
-      podcast: 'Welcome back, friends',
-      storytelling: 'Once upon a time...',
-      educational: 'Step 1 of 3',
-      wellness: 'Inhale. Exhale.',
-      cinematic: 'IN A WORLD',
-      // TikTok-editor-inspired
-      karaoke: 'TO GET STARTED',
-      deep_diver: 'to get started',
-      pod_p: 'TO GET',
-      popline: 'TO GET STARTED',
-      beasty: 'To get STARTED',
-      youshaei: 'TO GET STARTED',
-      mozi: 'TO GET STARTED',
-      glitch_infinite: 'STARTED',
-      bounce_label: 'NEW',
-    };
-    const sample = sampleByPreset[p.id] ?? 'Sample caption text';
-    const text = (function(){
-      switch (s.textCase) {
-        case 'uppercase':  return sample.toUpperCase();
-        case 'lowercase':  return sample.toLowerCase();
-        case 'capitalize': return sample.replace(/\b\w/g, c => c.toUpperCase());
-        default:           return sample;
-      }
-    })();
-
-    const fontWeight = s.bold || /Black|ExtraBold/.test(s.fontFamily) ? 900 : 600;
-    const cssFontFamily = s.fontFamily === 'Montserrat Black' ? 'Montserrat' : s.fontFamily;
-    const oc = s.outlineColor === 'transparent' ? null : s.outlineColor;
-    const isBox = s.borderStyle === 'box';
-
-    // Special preview-only effects.
-    const chromatic = s.effects?.chromaticAberration;
-    const glitchOffset = s.effects?.glitchOffset;
-
-    let outlineCss;
-    if (chromatic) {
-      // Pod P-style RGB split. No blur. Per codex: three layered hard-offset shadows.
-      outlineCss = `
-        text-shadow:
-          -2px 0 #00FFFF,
-           2px 0 #FF1493,
-           0 2px #FFFF00,
-           0 0 0 #000;`;
-    } else if (glitchOffset) {
-      // Glitch Infinite — hard double-image, no blur.
-      outlineCss = `
-        text-shadow:
-          3px  3px 0 ${glitchOffset},
-          ${oc ? `-3px -3px 0 ${oc},` : ''}
-          0 0 8px ${s.shadowColor};
-        ${oc ? `-webkit-text-stroke: 2px ${oc}; paint-order: stroke fill;` : ''}`;
-    } else if (isBox) {
-      // Sticker / pill — outlineColor is the background fill.
-      outlineCss = `
-        background-color: ${oc ?? '#000'};
-        padding: 8px 18px;
-        border-radius: 10px;
-        -webkit-box-decoration-break: clone;
-        box-decoration-break: clone;
-        box-shadow: 0 6px 18px ${s.shadowColor};`;
-    } else if (oc) {
-      // Outline-stroke (codex's recipe).
-      outlineCss = `
-        -webkit-text-stroke: 3px ${oc};
-        paint-order: stroke fill;
-        text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`;
-    } else {
-      outlineCss = `text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`;
-    }
+    const hints = p.preview ?? {};
+    const body = renderCardBody(p);
 
     return `
 <article class="card" data-preset="${p.id}">
@@ -138,21 +219,8 @@ function renderHTML() {
     <span class="id">${p.id}</span>
     <span class="font">${s.fontFamily}</span>
   </header>
-  <div class="stage" style="
-    background: radial-gradient(circle at 30% 20%, #1a1a1a, #0a0a0a);
-    background-image:
-      radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-      radial-gradient(circle at 30% 20%, #1a1a1a, #0a0a0a);
-    background-size: 22px 22px, cover;
-  ">
-    <span class="caption" style="
-      font-family: '${cssFontFamily}', sans-serif;
-      font-weight: ${fontWeight};
-      font-style: ${s.italic ? 'italic' : 'normal'};
-      color: ${s.primaryColor};
-      letter-spacing: 0.4px;
-      ${outlineCss}
-    ">${escapeHtml(text)}</span>
+  <div class="stage${hints.scanlines ? ' scanlines' : ''}">
+    <div class="caption-stack">${body}</div>
   </div>
   <footer>
     <span class="swatch" style="background:${s.primaryColor};border-color:${s.outlineColor}"></span>
@@ -240,13 +308,48 @@ header.top .subtitle { color: #888; font-size: 13px; }
   font-size: 11px; color: #777; font-family: 'JetBrains Mono', monospace;
 }
 .card .stage {
-  min-height: 150px;
+  min-height: 160px;
+  position: relative;
   display: flex; align-items: center; justify-content: center;
   padding: 22px 18px;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, #1a1a1a, #0a0a0a);
+  background-image:
+    radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    radial-gradient(circle at 30% 20%, #1a1a1a, #0a0a0a);
+  background-size: 22px 22px, cover;
+}
+.card .stage.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.06) 0,
+    rgba(255,255,255,0.06) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  mix-blend-mode: overlay;
+}
+.card .caption-stack {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  word-break: break-word;
+  max-width: 100%;
+}
+.card .caption-line {
+  line-height: 1;
+  display: flex;
+  justify-content: center;
 }
 .card .caption {
-  font-size: 36px;
-  line-height: 1.2;
   text-align: center;
   word-break: break-word;
 }

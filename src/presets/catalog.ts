@@ -1,4 +1,4 @@
-import type { SubtitleStyle } from '../render/ass.js';
+import type { SubtitleStyle, BorderStyle, TextCase } from '../render/ass.js';
 
 export type PresetId =
   // Original vibe presets
@@ -25,7 +25,61 @@ export type PresetId =
   | 'youshaei'
   | 'mozi'
   | 'glitch_infinite'
-  | 'bounce_label';
+  | 'bounce_label'
+  | 'seamless_bounce'
+  | 'baby_earthquake';
+
+/**
+ * Per-line styling override for compound compositions. Each PresetLine is one
+ * visual row in the gallery rendering. Fields override the preset's base style
+ * for THIS LINE ONLY — anything left undefined inherits from the preset.
+ *
+ * Example: Seamless Bounce composition is two lines —
+ *   - line 1: "NEW" in box style (yellow pill, dark text)
+ *   - line 2: "STARTED" plain green text on dark
+ */
+export interface PresetLine {
+  text: string;
+  primaryColor?: string;
+  outlineColor?: string;
+  shadowColor?: string;
+  fontFamily?: string;
+  textCase?: TextCase;
+  borderStyle?: BorderStyle;
+  /** Relative size multiplier vs the preset's base fontSize (e.g. 1.2 for big). */
+  scale?: number;
+  /** Force bold on a single weighted family (variable fonts). */
+  bold?: boolean;
+}
+
+/**
+ * Preview-only metadata: gallery rendering hints, NOT subtitle output.
+ * The ASS renderer ignores this entire field. Use it to convey compositional
+ * intent (multi-line layouts, word-highlights, CRT scanlines) for v1's gallery
+ * while we save the actual word-level/animation work for v2.
+ */
+export interface PresetPreviewHints {
+  /** Override the gallery sample text. */
+  sampleText?: string;
+  /**
+   * Multi-element composition: one styled span per line, stacked vertically.
+   * When provided, takes precedence over `sampleText` + `highlightWord`.
+   */
+  lines?: PresetLine[];
+  /** Highlight one word with a colored background pill (karaoke base). */
+  highlightWord?: {
+    /** Zero-based word index in the sample text. */
+    index: number;
+    /** Background color of the highlight pill (e.g. "#39FF14"). */
+    bg: string;
+    /** Override the highlighted word's text color (default: #0A0A0A). */
+    color?: string;
+  };
+  /** Stack the sample text vertically, one word per line. Cheap Popline mode. */
+  stackWords?: boolean;
+  /** Overlay subtle CRT scanlines (Pod P / glitch aesthetic). */
+  scanlines?: boolean;
+}
 
 export interface VibePreset {
   id: PresetId;
@@ -33,6 +87,8 @@ export interface VibePreset {
   description: string;
   tags: string[];
   style: SubtitleStyle;
+  /** Gallery-only rendering hints. Ignored by the ASS renderer. */
+  preview?: PresetPreviewHints;
 }
 
 export const PRESET_CATALOG: VibePreset[] = [
@@ -182,12 +238,16 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'karaoke',
     label: 'Karaoke',
-    description: 'Bold caps, word-highlight base (v1 static, v2 highlights)',
+    description: 'Bold caps with one word highlighted (v2: rolls per word)',
     tags: ['karaoke', 'highlight', 'word', 'sing', 'lyric', 'song', 'music', 'tiktok', 'submagic'],
     style: {
       fontFamily: 'Montserrat Black',
       fontSize: 30, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#000000',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+    },
+    preview: {
+      sampleText: 'TO GET STARTED',
+      highlightWord: { index: 1, bg: '#39FF14', color: '#000000' },
     },
   },
   {
@@ -205,25 +265,27 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'pod_p',
     label: 'Pod P',
-    description: 'Chromatic-aberration RGB split (preview only in v1)',
-    tags: ['glitch', 'chromatic', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber'],
+    description: 'Chromatic-aberration RGB split with CRT scanlines',
+    tags: ['glitch', 'chromatic', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber', 'crt', 'scanlines'],
     style: {
       fontFamily: 'Anton',
       fontSize: 32, primaryColor: '#FFFFFF', outlineColor: 'transparent', shadowColor: '#000000',
       bold: false, italic: false, alignment: 'center', showShadow: false, textCase: 'uppercase',
       effects: { chromaticAberration: true },
     },
+    preview: { scanlines: true },
   },
   {
     id: 'popline',
     label: 'Popline',
-    description: 'Tall condensed Bebas Neue, multi-line stack',
+    description: 'Tall condensed Bebas Neue stacked one word per line',
     tags: ['popline', 'tall', 'condensed', 'stacked', 'minimal', 'editorial', 'clean'],
     style: {
       fontFamily: 'Bebas Neue',
-      fontSize: 36, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#00000088',
+      fontSize: 32, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#00000088',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
+    preview: { sampleText: 'TO GET STARTED', stackWords: true },
   },
   {
     id: 'beasty',
@@ -251,18 +313,21 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'mozi',
     label: 'Mozi',
-    description: 'Neon lime Anton, max viral energy',
+    description: 'Neon lime Anton, 2-line stack, max viral energy',
     tags: ['mozi', 'neon', 'lime', 'viral', 'attention', 'shock', 'breakdown'],
     style: {
       fontFamily: 'Anton',
       fontSize: 32, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
+    preview: {
+      lines: [{ text: 'TO GET' }, { text: 'STARTED' }],
+    },
   },
   {
     id: 'glitch_infinite',
     label: 'Glitch Infinite',
-    description: 'Rubik Black yellow with red glitch shadow',
+    description: 'Yellow pill label + red glitch text below',
     tags: ['glitch', 'broken', 'distort', 'error', 'hack', 'datamosh', 'edgy'],
     style: {
       fontFamily: 'Rubik',
@@ -270,17 +335,61 @@ export const PRESET_CATALOG: VibePreset[] = [
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
       effects: { glitchOffset: '#FF0033' },
     },
+    preview: {
+      lines: [
+        { text: 'New',     primaryColor: '#0A0A0A', outlineColor: '#FFE600', borderStyle: 'box', textCase: 'capitalize', scale: 0.75 },
+        { text: 'started', primaryColor: '#FFFF00', outlineColor: '#000000', borderStyle: 'outline', textCase: 'lowercase', scale: 1.1 },
+      ],
+      scanlines: true,
+    },
   },
   {
     id: 'bounce_label',
     label: 'Bounce Label',
-    description: 'Lime Rubik on yellow pill (v2: bounce/earthquake animations)',
-    tags: ['bounce', 'earthquake', 'shake', 'pop', 'label', 'highlight', 'callout', 'yellow'],
+    description: 'Bold dark Rubik inside yellow pill (single-line label)',
+    tags: ['label', 'pill', 'highlight', 'callout', 'yellow', 'pop'],
     style: {
       fontFamily: 'Rubik',
       fontSize: 28, primaryColor: '#0A0A0A', outlineColor: '#FFE600', shadowColor: '#00000088',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
       borderStyle: 'box',
+    },
+    preview: { sampleText: 'NEW' },
+  },
+  {
+    id: 'seamless_bounce',
+    label: 'Seamless Bounce',
+    description: 'Yellow pill "New" + lime "started". Shares the static layout with baby_earthquake; the v2 motion pass adds the bounce/spring animation.',
+    tags: ['seamless', 'bounce', 'pop', 'spring', 'elastic', 'callout', 'announcement', 'new'],
+    style: {
+      fontFamily: 'Rubik',
+      fontSize: 28, primaryColor: '#0A0A0A', outlineColor: '#FFE600', shadowColor: '#00000088',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+      borderStyle: 'box',
+    },
+    preview: {
+      lines: [
+        { text: 'New',     primaryColor: '#0A0A0A', outlineColor: '#FFE600', borderStyle: 'box', textCase: 'capitalize', scale: 0.8 },
+        { text: 'started', primaryColor: '#39FF14', outlineColor: '#000000', borderStyle: 'outline', textCase: 'lowercase', fontFamily: 'Rubik', scale: 1.0 },
+      ],
+    },
+  },
+  {
+    id: 'baby_earthquake',
+    label: 'Baby Earthquake',
+    description: 'Yellow pill "New" + lime "started". Shares the static layout with seamless_bounce; the v2 motion pass adds the shake/earthquake animation.',
+    tags: ['baby', 'earthquake', 'shake', 'rumble', 'impact', 'shock', 'tremor', 'callout', 'new'],
+    style: {
+      fontFamily: 'Rubik',
+      fontSize: 28, primaryColor: '#0A0A0A', outlineColor: '#FFE600', shadowColor: '#00000088',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+      borderStyle: 'box',
+    },
+    preview: {
+      lines: [
+        { text: 'New',     primaryColor: '#0A0A0A', outlineColor: '#FFE600', borderStyle: 'box', textCase: 'capitalize', scale: 0.8 },
+        { text: 'started', primaryColor: '#39FF14', outlineColor: '#000000', borderStyle: 'outline', textCase: 'lowercase', fontFamily: 'Rubik', scale: 1.0 },
+      ],
     },
   },
 ];
