@@ -66,6 +66,16 @@ function renderHTML() {
       educational: 'Step 1 of 3',
       wellness: 'Inhale. Exhale.',
       cinematic: 'IN A WORLD',
+      // TikTok-editor-inspired
+      karaoke: 'TO GET STARTED',
+      deep_diver: 'to get started',
+      pod_p: 'TO GET',
+      popline: 'TO GET STARTED',
+      beasty: 'To get STARTED',
+      youshaei: 'TO GET STARTED',
+      mozi: 'TO GET STARTED',
+      glitch_infinite: 'STARTED',
+      bounce_label: 'NEW',
     };
     const sample = sampleByPreset[p.id] ?? 'Sample caption text';
     const text = (function(){
@@ -79,15 +89,48 @@ function renderHTML() {
 
     const fontWeight = s.bold || /Black|ExtraBold/.test(s.fontFamily) ? 900 : 600;
     const cssFontFamily = s.fontFamily === 'Montserrat Black' ? 'Montserrat' : s.fontFamily;
-    // Per codex critique: use `paint-order: stroke fill` so the outline is drawn
-    // BEHIND the glyph fill — no phantom-doubling, no fill erosion. Single soft
-    // drop shadow for depth. Cleaner than stacked 4/8-direction text-shadow tricks.
     const oc = s.outlineColor === 'transparent' ? null : s.outlineColor;
-    const outlineCss = oc
-      ? `-webkit-text-stroke: 3px ${oc};
-         paint-order: stroke fill;
-         text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`
-      : `text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`;
+    const isBox = s.borderStyle === 'box';
+
+    // Special preview-only effects.
+    const chromatic = s.effects?.chromaticAberration;
+    const glitchOffset = s.effects?.glitchOffset;
+
+    let outlineCss;
+    if (chromatic) {
+      // Pod P-style RGB split. No blur. Per codex: three layered hard-offset shadows.
+      outlineCss = `
+        text-shadow:
+          -2px 0 #00FFFF,
+           2px 0 #FF1493,
+           0 2px #FFFF00,
+           0 0 0 #000;`;
+    } else if (glitchOffset) {
+      // Glitch Infinite — hard double-image, no blur.
+      outlineCss = `
+        text-shadow:
+          3px  3px 0 ${glitchOffset},
+          ${oc ? `-3px -3px 0 ${oc},` : ''}
+          0 0 8px ${s.shadowColor};
+        ${oc ? `-webkit-text-stroke: 2px ${oc}; paint-order: stroke fill;` : ''}`;
+    } else if (isBox) {
+      // Sticker / pill — outlineColor is the background fill.
+      outlineCss = `
+        background-color: ${oc ?? '#000'};
+        padding: 8px 18px;
+        border-radius: 10px;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        box-shadow: 0 6px 18px ${s.shadowColor};`;
+    } else if (oc) {
+      // Outline-stroke (codex's recipe).
+      outlineCss = `
+        -webkit-text-stroke: 3px ${oc};
+        paint-order: stroke fill;
+        text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`;
+    } else {
+      outlineCss = `text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`;
+    }
 
     return `
 <article class="card" data-preset="${p.id}">

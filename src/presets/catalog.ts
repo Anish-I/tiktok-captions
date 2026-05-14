@@ -1,6 +1,7 @@
 import type { SubtitleStyle } from '../render/ass.js';
 
 export type PresetId =
+  // Original vibe presets
   | 'horror'
   | 'luxury'
   | 'comedy'
@@ -12,7 +13,19 @@ export type PresetId =
   | 'storytelling'
   | 'educational'
   | 'wellness'
-  | 'cinematic';
+  | 'cinematic'
+  // TikTok-editor-inspired styles (modeled after Submagic Karaoke / Deep Diver /
+  // Pod P / Popline / Beasty / Youshaei / Mozi / Glitch Infinite / Bounce Label).
+  // v1 is static; word-highlight and animation arrive in v2.
+  | 'karaoke'
+  | 'deep_diver'
+  | 'pod_p'
+  | 'popline'
+  | 'beasty'
+  | 'youshaei'
+  | 'mozi'
+  | 'glitch_infinite'
+  | 'bounce_label';
 
 export interface VibePreset {
   id: PresetId;
@@ -159,6 +172,115 @@ export const PRESET_CATALOG: VibePreset[] = [
       fontFamily: 'Fira Sans Condensed',
       fontSize: 30, primaryColor: '#FFFFFF', outlineColor: '#D8D8D8', shadowColor: '#000000',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // TikTok-editor-inspired presets (Submagic Karaoke/Deep Diver/etc).
+  // Static for v1; word-highlight + animation in v2.
+  // -------------------------------------------------------------------------
+  {
+    id: 'karaoke',
+    label: 'Karaoke',
+    description: 'Bold caps, word-highlight base (v1 static, v2 highlights)',
+    tags: ['karaoke', 'highlight', 'word', 'sing', 'lyric', 'song', 'music', 'tiktok', 'submagic'],
+    style: {
+      fontFamily: 'Montserrat Black',
+      fontSize: 30, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#000000',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+    },
+  },
+  {
+    id: 'deep_diver',
+    label: 'Deep Diver',
+    description: 'Lowercase Poppins on cream sticker pill',
+    tags: ['sticker', 'pill', 'cream', 'minimalist', 'aesthetic', 'lifestyle', 'vlog', 'soft'],
+    style: {
+      fontFamily: 'Poppins',
+      fontSize: 26, primaryColor: '#1A1A1A', outlineColor: '#F5F5DC', shadowColor: '#00000066',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'lowercase',
+      borderStyle: 'box',
+    },
+  },
+  {
+    id: 'pod_p',
+    label: 'Pod P',
+    description: 'Chromatic-aberration RGB split (preview only in v1)',
+    tags: ['glitch', 'chromatic', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber'],
+    style: {
+      fontFamily: 'Anton',
+      fontSize: 32, primaryColor: '#FFFFFF', outlineColor: 'transparent', shadowColor: '#000000',
+      bold: false, italic: false, alignment: 'center', showShadow: false, textCase: 'uppercase',
+      effects: { chromaticAberration: true },
+    },
+  },
+  {
+    id: 'popline',
+    label: 'Popline',
+    description: 'Tall condensed Bebas Neue, multi-line stack',
+    tags: ['popline', 'tall', 'condensed', 'stacked', 'minimal', 'editorial', 'clean'],
+    style: {
+      fontFamily: 'Bebas Neue',
+      fontSize: 36, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#00000088',
+      bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+    },
+  },
+  {
+    id: 'beasty',
+    label: 'Beasty',
+    description: 'Clean white Montserrat Black, the canonical MrBeast caption',
+    tags: ['beasty', 'mrbeast', 'creator', 'youtube', 'vlog', 'commentary', 'reaction'],
+    style: {
+      fontFamily: 'Montserrat Black',
+      fontSize: 28, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#000000',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'normal',
+    },
+  },
+  {
+    id: 'youshaei',
+    label: 'Youshaei',
+    description: 'White Montserrat ExtraBold inside black box pill',
+    tags: ['youshaei', 'sticker', 'black-box', 'highlight', 'callout', 'announcement'],
+    style: {
+      fontFamily: 'Montserrat Black',
+      fontSize: 26, primaryColor: '#FFFFFF', outlineColor: '#0A0A0A', shadowColor: '#000000AA',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+      borderStyle: 'box',
+    },
+  },
+  {
+    id: 'mozi',
+    label: 'Mozi',
+    description: 'Neon lime Anton, max viral energy',
+    tags: ['mozi', 'neon', 'lime', 'viral', 'attention', 'shock', 'breakdown'],
+    style: {
+      fontFamily: 'Anton',
+      fontSize: 32, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
+      bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+    },
+  },
+  {
+    id: 'glitch_infinite',
+    label: 'Glitch Infinite',
+    description: 'Rubik Black yellow with red glitch shadow',
+    tags: ['glitch', 'broken', 'distort', 'error', 'hack', 'datamosh', 'edgy'],
+    style: {
+      fontFamily: 'Rubik',
+      fontSize: 30, primaryColor: '#FFFF00', outlineColor: '#000000', shadowColor: '#FF0033',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+      effects: { glitchOffset: '#FF0033' },
+    },
+  },
+  {
+    id: 'bounce_label',
+    label: 'Bounce Label',
+    description: 'Lime Rubik on yellow pill (v2: bounce/earthquake animations)',
+    tags: ['bounce', 'earthquake', 'shake', 'pop', 'label', 'highlight', 'callout', 'yellow'],
+    style: {
+      fontFamily: 'Rubik',
+      fontSize: 28, primaryColor: '#0A0A0A', outlineColor: '#FFE600', shadowColor: '#00000088',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+      borderStyle: 'box',
     },
   },
 ];

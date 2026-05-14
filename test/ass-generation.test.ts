@@ -154,6 +154,53 @@ describe('renderASS with horror preset (end-to-end)', () => {
   });
 });
 
+describe('renderASS borderStyle=box (sticker / pill captions)', () => {
+  const baseBoxStyle: SubtitleStyle = {
+    fontFamily: 'Roboto',
+    fontSize: 26,
+    primaryColor: '#FFFFFF',
+    outlineColor: '#0A0A0A',  // becomes the box bg
+    shadowColor: '#000000',
+    bold: true,
+    italic: false,
+    alignment: 'center',
+    showShadow: true,
+    textCase: 'uppercase',
+    borderStyle: 'box',
+  };
+
+  it('emits ASS BorderStyle=3 when borderStyle is box', () => {
+    const cues = groupIntoCues(SAMPLE_WORDS);
+    const ass = renderASS(cues, baseBoxStyle);
+    const styleRow = ass.split('\n').find(l => l.startsWith('Style: Default'))!;
+    // BorderStyle is column 16 (1-indexed): Name, Fontname, Fontsize, Primary,
+    // Secondary, Outline, BackColour, Bold, Italic, Underline, StrikeOut,
+    // ScaleX, ScaleY, Spacing, Angle, BorderStyle, ...
+    const fields = styleRow.replace(/^Style: /, '').split(',');
+    expect(fields[15]).toBe('3');
+  });
+
+  it('points BackColour at the outline color when in box mode (so libass paints the pill)', () => {
+    const cues = groupIntoCues(SAMPLE_WORDS);
+    const ass = renderASS(cues, baseBoxStyle);
+    const styleRow = ass.split('\n').find(l => l.startsWith('Style: Default'))!;
+    const fields = styleRow.replace(/^Style: /, '').split(',');
+    // outline color #0A0A0A -> BGR 0A0A0A -> &H000A0A0A
+    expect(fields[5]).toBe('&H000A0A0A');  // OutlineColour
+    expect(fields[6]).toBe('&H000A0A0A');  // BackColour matches outline for box mode
+  });
+
+  it('outline mode (default) keeps BorderStyle=1 and BackColour transparent', () => {
+    const cues = groupIntoCues(SAMPLE_WORDS);
+    const outlineOnly = { ...baseBoxStyle, borderStyle: 'outline' as const };
+    const ass = renderASS(cues, outlineOnly);
+    const fields = ass.split('\n').find(l => l.startsWith('Style: Default'))!
+      .replace(/^Style: /, '').split(',');
+    expect(fields[15]).toBe('1');
+    expect(fields[6]).toBe('&H00000000');
+  });
+});
+
 describe('renderSRT', () => {
   it('emits valid SRT format', () => {
     const cues = groupIntoCues(SAMPLE_WORDS);

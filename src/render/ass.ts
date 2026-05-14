@@ -3,13 +3,14 @@ import type { Cue } from './cues.js';
 
 export type Alignment = 'left' | 'center' | 'right';
 export type TextCase = 'normal' | 'uppercase' | 'lowercase' | 'capitalize';
+export type BorderStyle = 'outline' | 'box';
 
 export interface SubtitleStyle {
   fontFamily: string;
   fontSize: number;          // Reference size in points (will be scaled by video height).
-  primaryColor: string;      // #RRGGBB
-  outlineColor: string;      // #RRGGBB | 'transparent'
-  shadowColor: string;       // #RRGGBB
+  primaryColor: string;      // #RRGGBB — text fill (or text-on-box for box style)
+  outlineColor: string;      // #RRGGBB | 'transparent' — outline ring, OR box bg if borderStyle='box'
+  shadowColor: string;       // #RRGGBB — soft drop shadow / glow
   bold: boolean;
   italic: boolean;
   alignment: Alignment;
@@ -17,6 +18,23 @@ export interface SubtitleStyle {
   textCase?: TextCase;
   scale?: number;            // User-supplied font-size multiplier (default 1.0).
   marginV?: number;          // Bottom margin in px at 1080p reference (default 120).
+  /**
+   * `outline` = traditional stroke around glyph (ASS BorderStyle=1, libass default).
+   * `box`     = opaque box background — outlineColor becomes the box fill, glyph
+   *             sits in front. ASS BorderStyle=3. Used by sticker-style captions
+   *             (Submagic "Youshaei" black box, "Deep Diver" cream pill).
+   */
+  borderStyle?: BorderStyle;
+  /**
+   * Optional preview-only visual effects. The ASS renderer ignores these — they
+   * exist so the gallery can show a static approximation of v2 animations.
+   */
+  effects?: {
+    /** RGB chromatic aberration (Pod P style). Preview only. */
+    chromaticAberration?: boolean;
+    /** Hard offset double-image (Glitch Infinite style). Hex color of the offset. */
+    glitchOffset?: string;
+  };
 }
 
 export interface RenderASSOptions {
@@ -83,8 +101,10 @@ export function renderASS(cues: Cue[], style: SubtitleStyle, opts: RenderASSOpti
   const finalSize = Math.round(style.fontSize * userScale * videoScaleFactor * 2.5);
 
   const transparentOutline = style.outlineColor === 'transparent';
-  const borderWidth = transparentOutline ? 0 : 3;
-  const shadowDepth = style.showShadow ? 3 : 0;
+  const isBox = style.borderStyle === 'box';
+  const borderStyleCode = isBox ? 3 : 1;          // ASS BorderStyle: 1=outline+shadow, 3=opaque box
+  const borderWidth = isBox ? 4 : (transparentOutline ? 0 : 3);
+  const shadowDepth = style.showShadow && !isBox ? 3 : 0;
 
   const primary = hexToAssBgr(style.primaryColor);
   const outline = transparentOutline ? '&H00000000' : hexToAssBgr(style.outlineColor);
@@ -106,7 +126,8 @@ export function renderASS(cues: Cue[], style: SubtitleStyle, opts: RenderASSOpti
     `PlayResY: ${videoHeight}\n\n` +
     `[V4+ Styles]\n` +
     `Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n` +
-    `Style: Default,${fontnameForAss},${finalSize},${primary},&H000000FF,${outline},&H00000000,${bold},${italic},0,0,100,100,0,0,1,${borderWidth},${shadowDepth},${alignment},${marginL},${marginR},${marginV},1\n\n` +
+    // BackColour is the box fill when BorderStyle=3 — point it at the outline color too.
+    `Style: Default,${fontnameForAss},${finalSize},${primary},&H000000FF,${outline},${isBox ? outline : '&H00000000'},${bold},${italic},0,0,100,100,0,0,${borderStyleCode},${borderWidth},${shadowDepth},${alignment},${marginL},${marginR},${marginV},1\n\n` +
     `[Events]\n` +
     `Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
 
