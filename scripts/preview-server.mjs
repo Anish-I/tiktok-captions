@@ -79,16 +79,15 @@ function renderHTML() {
 
     const fontWeight = s.bold || /Black|ExtraBold/.test(s.fontFamily) ? 900 : 600;
     const cssFontFamily = s.fontFamily === 'Montserrat Black' ? 'Montserrat' : s.fontFamily;
-    const outlineCss =
-      s.outlineColor === 'transparent'
-        ? ''
-        : `-webkit-text-stroke: 2px ${s.outlineColor};
-            text-shadow:
-              -2px -2px 0 ${s.outlineColor},
-               2px -2px 0 ${s.outlineColor},
-              -2px  2px 0 ${s.outlineColor},
-               2px  2px 0 ${s.outlineColor},
-               0 0 12px ${s.shadowColor};`;
+    // Per codex critique: use `paint-order: stroke fill` so the outline is drawn
+    // BEHIND the glyph fill — no phantom-doubling, no fill erosion. Single soft
+    // drop shadow for depth. Cleaner than stacked 4/8-direction text-shadow tricks.
+    const oc = s.outlineColor === 'transparent' ? null : s.outlineColor;
+    const outlineCss = oc
+      ? `-webkit-text-stroke: 3px ${oc};
+         paint-order: stroke fill;
+         text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`
+      : `text-shadow: ${s.showShadow ? `0 3px 10px ${s.shadowColor}` : 'none'};`;
 
     return `
 <article class="card" data-preset="${p.id}">

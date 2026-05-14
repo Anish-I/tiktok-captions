@@ -26,11 +26,13 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'horror',
     label: 'Horror',
-    description: 'Gothic, blood-red, spooky',
+    description: 'Gothic blood-red on bone outline',
     tags: ['horror', 'spooky', 'gothic', 'scary', 'halloween', 'dark', 'blood', 'creepy', 'haunted', 'witch', 'ghost'],
+    // Codex: black-outline-on-horror is the real failure. Bone outline gives the
+    // blood color something to bleed against and keeps readability on dark bg.
     style: {
       fontFamily: 'Creepster',
-      fontSize: 32, primaryColor: '#8B0000', outlineColor: '#000000', shadowColor: '#1a0000',
+      fontSize: 32, primaryColor: '#C1121F', outlineColor: '#F2E8D8', shadowColor: '#000000',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
   },
@@ -114,11 +116,13 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'storytelling',
     label: 'Storytelling',
-    description: 'Playfair beige, narrative',
+    description: 'Playfair beige, literary warmth',
     tags: ['story', 'storytelling', 'narrative', 'drama', 'once-upon-a-time', 'tale', 'fairy-tale', 'novel', 'memoir'],
+    // Codex: keep literary warmth but the brown outline blends into dark bg.
+    // Lighter buttercream outline keeps separation; deep coffee shadow for depth.
     style: {
       fontFamily: 'Playfair Display',
-      fontSize: 28, primaryColor: '#F5F5DC', outlineColor: '#8B4513', shadowColor: '#3D2817',
+      fontSize: 28, primaryColor: '#F5F5DC', outlineColor: '#E6CFA3', shadowColor: '#2A160C',
       bold: false, italic: true, alignment: 'center', showShadow: true, textCase: 'capitalize',
     },
   },
@@ -147,11 +151,13 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'cinematic',
     label: 'Cinematic',
-    description: 'Heavy white sans, epic',
+    description: 'Heavy white sans, silver outline',
     tags: ['cinematic', 'trailer', 'epic', 'vista', 'dramatic', 'music-video', 'film', 'movie', 'travel'],
+    // Codex: 1a1a1a outline matched the dark bg, edges disappeared. Silver outline
+    // separates from any background while keeping the cool film-trailer mood.
     style: {
       fontFamily: 'Fira Sans Condensed',
-      fontSize: 30, primaryColor: '#FFFFFF', outlineColor: '#1a1a1a', shadowColor: '#000000',
+      fontSize: 30, primaryColor: '#FFFFFF', outlineColor: '#D8D8D8', shadowColor: '#000000',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
   },

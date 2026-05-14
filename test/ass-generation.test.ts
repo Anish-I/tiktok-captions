@@ -141,13 +141,15 @@ describe('renderASS', () => {
 });
 
 describe('renderASS with horror preset (end-to-end)', () => {
-  it('produces a complete ASS file referencing Creepster + red text', () => {
+  it('produces a complete ASS file referencing Creepster + the preset primary color', () => {
     const horror = getPreset('horror')!;
     const cues = groupIntoCues(SAMPLE_WORDS);
     const ass = renderASS(cues, horror.style);
 
     expect(ass).toMatch(/Style: Default,Creepster,/);
-    expect(ass).toContain('&H0000008B');           // #8B0000 -> BGR
+    // Derive expected BGR from the preset itself so this test stays valid as
+    // colors get tuned by future critique/iteration.
+    expect(ass).toContain(hexToAssBgr(horror.style.primaryColor));
     expect(ass.split('\nDialogue:').length).toBe(cues.length + 1); // header + N events
   });
 });
