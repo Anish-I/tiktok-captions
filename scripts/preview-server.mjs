@@ -51,14 +51,14 @@ function fontFaceCss() {
 
 const SAMPLE_BY_PRESET = {
   // Vibe presets
-  horror: 'A WITCH lurked in the dark.',
+  horror: 'A WITCH lurked.',
   luxury: 'Champagne, please.',
   comedy: 'WAIT FOR IT...',
   gaming: 'GG NO RE',
   fitness: 'NO DAYS OFF',
   motivational: 'STAY HUNGRY',
-  news: 'BREAKING: details incoming',
-  podcast: 'Welcome back, friends',
+  news: 'BREAKING NEWS',
+  podcast: 'Welcome back',
   storytelling: 'Once upon a time...',
   educational: 'Step 1 of 3',
   wellness: 'Inhale. Exhale.',
@@ -81,7 +81,7 @@ const SAMPLE_BY_PRESET = {
   true_crime: 'WHAT HAPPENED NEXT',
 };
 
-const BASE_FONT_PX = 36;
+const BASE_FONT_PX = 24;
 
 function applyTextCase(text, mode) {
   switch (mode) {
@@ -167,10 +167,13 @@ function renderWord(word, baseStyle) {
   const bgCss = word.bg
     ? `background:${word.bg}; padding: 0 0.22em; border-radius: 0.14em; -webkit-text-stroke: 0; text-shadow: none;`
     : '';
-  // Explicit inter-word margin instead of relying on text whitespace — flex
-  // parents collapse whitespace between span children, so this guarantees
-  // visible word separation in every rendering context.
+  // Explicit inter-word margin (flex parents collapse text whitespace).
+  // `display: inline-block` + `white-space: nowrap` keeps each word atomic so
+  // long words like "STARTED" never break into "ST ARTED" when the parent runs
+  // out of width.
   return `<span class="word" style="
+    display: inline-block;
+    white-space: nowrap;
     font-family: '${cssFontFamily}', sans-serif;
     font-weight: ${fontWeight};
     font-style: ${isItalic ? 'italic' : 'normal'};
@@ -267,18 +270,16 @@ function renderHTML() {
 
     return `
 <article class="card" data-preset="${p.id}">
-  <header>
-    <span class="id">${p.id}</span>
-    <span class="font">${s.fontFamily}</span>
-  </header>
   <div class="stage${hints.scanlines ? ' scanlines' : ''}">
     <div class="caption-stack">${body}</div>
+    <div class="overlay">
+      <div class="overlay-id">${p.id}</div>
+      <div class="overlay-font">${s.fontFamily}</div>
+      <div class="overlay-desc">${escapeHtml(p.description)}</div>
+      <button class="overlay-copy" data-id="${p.id}">copy id</button>
+    </div>
   </div>
-  <footer>
-    <span class="swatch" style="background:${s.primaryColor};border-color:${s.outlineColor}"></span>
-    <span class="meta">${p.description}</span>
-    <button class="copy" data-id="${p.id}">copy id</button>
-  </footer>
+  <div class="card-label">${escapeHtml(p.label)}</div>
 </article>`.trim();
   }).join('\n');
 
@@ -331,45 +332,34 @@ header.top .subtitle { color: #888; font-size: 13px; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 18px 14px;
   padding: 22px 40px 60px;
 }
 .card {
-  background: #131316;
-  border: 1px solid #232328;
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+.card .stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center; justify-content: center;
+  padding: 14px;
   overflow: hidden;
+  background: #2a2a2a;
+  border: 1px solid #1f1f22;
+  border-radius: 10px;
   transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
-.card.highlight {
+.card.highlight .stage {
   border-color: #4a90e2;
   box-shadow: 0 0 0 1px #4a90e2, 0 12px 30px rgba(74,144,226,.25);
   transform: translateY(-2px);
-}
-.card header {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding: 14px 18px 10px;
-  border-bottom: 1px solid #1d1d22;
-}
-.card header .id {
-  font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
-  text-transform: uppercase; color: #e8e8ea;
-}
-.card header .font {
-  font-size: 11px; color: #777; font-family: 'JetBrains Mono', monospace;
-}
-.card .stage {
-  min-height: 160px;
-  position: relative;
-  display: flex; align-items: center; justify-content: center;
-  padding: 22px 18px;
-  overflow: hidden;
-  background: radial-gradient(circle at 30% 20%, #1a1a1a, #0a0a0a);
-  background-image:
-    radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    radial-gradient(circle at 30% 20%, #1a1a1a, #0a0a0a);
-  background-size: 22px 22px, cover;
 }
 .card .stage.scanlines::after {
   content: '';
@@ -384,6 +374,67 @@ header.top .subtitle { color: #888; font-size: 13px; }
     transparent 4px
   );
   mix-blend-mode: overlay;
+  z-index: 2;
+}
+.card .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,12,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  text-align: center;
+  z-index: 3;
+}
+.card .stage:hover .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+.card .overlay-id {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e8e8ea;
+  letter-spacing: 0.4px;
+}
+.card .overlay-font {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  color: #888;
+}
+.card .overlay-desc {
+  font-size: 10.5px;
+  color: #bbb;
+  line-height: 1.35;
+  max-height: 4.5em;
+  overflow: hidden;
+}
+.card .overlay-copy {
+  margin-top: 4px;
+  background: #4a90e2;
+  color: white;
+  border: 0;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.card .overlay-copy:hover { background: #5a9eea; }
+.card .overlay-copy.copied { background: #2cc26f; }
+.card-label {
+  color: #e8e8ea;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.1px;
 }
 .card .caption-stack {
   position: relative;
@@ -405,25 +456,6 @@ header.top .subtitle { color: #888; font-size: 13px; }
   text-align: center;
   word-break: break-word;
 }
-.card footer {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px 12px;
-  border-top: 1px solid #1d1d22;
-  background: #0f0f12;
-}
-.swatch {
-  width: 16px; height: 16px; border-radius: 4px;
-  border: 1.5px solid;
-}
-.meta { flex: 1; font-size: 12px; color: #888; }
-.copy {
-  background: transparent; color: #888;
-  border: 1px solid #2a2a30; border-radius: 6px;
-  font-size: 11px; padding: 5px 9px; cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
-}
-.copy:hover { color: #e8e8ea; border-color: #4a90e2; }
-.copy.copied { background: #4a90e2; color: white; border-color: #4a90e2; }
 </style>
 </head>
 <body>
@@ -474,7 +506,7 @@ async function doPick() {
 btn.addEventListener('click', doPick);
 input.addEventListener('keydown', e => { if (e.key === 'Enter') doPick(); });
 
-document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', async (ev) => {
+document.querySelectorAll('.overlay-copy').forEach(b => b.addEventListener('click', async (ev) => {
   const id = ev.currentTarget.dataset.id;
   try {
     await navigator.clipboard.writeText(id);
