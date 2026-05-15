@@ -19,15 +19,19 @@ export type PresetId =
   // v1 is static; word-highlight and animation arrive in v2.
   | 'karaoke'
   | 'deep_diver'
-  | 'pod_p'
+  | 'chromatic'        // was: pod_p (consensus rename — describe technique, not source folder)
   | 'popline'
-  | 'beasty'
-  | 'youshaei'
+  | 'creator_clean'    // was: beasty (avoid creator-IP coupling)
+  | 'pill_dark'        // was: youshaei (avoid creator-IP coupling)
   | 'mozi'
   | 'glitch_infinite'
   | 'bounce_label'
   | 'seamless_bounce'
-  | 'baby_earthquake';
+  | 'baby_earthquake'
+  // Modern TikTok verticals (codex r6 swarm: missing native vibes)
+  | 'grwm_soft'
+  | 'day_vlog'
+  | 'true_crime';
 
 /**
  * Per-line styling override for compound compositions. Each PresetLine is one
@@ -130,11 +134,13 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'gaming',
     label: 'Gaming',
-    description: 'Pixel arcade, neon green',
+    description: 'Pixel arcade neon green (retro/Twitch nostalgia — large minimum size required)',
     tags: ['gaming', 'game', 'esports', 'twitch', 'pixel', 'retro', 'arcade', 'streamer', 'rpg', 'fps'],
+    // Round-6 (claude typography): Press Start 2P at <40pt smears on phone screens
+    // (8x8 pixel grid). Bumped fontSize 22→40 so the rendered output stays legible.
     style: {
       fontFamily: 'Press Start 2P',
-      fontSize: 22, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
+      fontSize: 40, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
   },
@@ -198,22 +204,27 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'educational',
     label: 'Educational',
-    description: 'Friendly blue Poppins',
+    description: 'Deep navy Poppins on white outline',
     tags: ['educational', 'education', 'tutorial', 'learn', 'explain', 'lesson', 'teach', 'how-to', 'study', 'school', 'class'],
+    // Round-6 (claude a11y critique): #4A90E2 on medium-gray bg was 1.3:1 — catastrophic WCAG AA
+    // fail. Dropped to #1F4E8B (deep navy) which clears 4.5:1 against gray and pairs better
+    // with the white outline already in use.
     style: {
       fontFamily: 'Poppins',
-      fontSize: 26, primaryColor: '#4A90E2', outlineColor: '#FFFFFF', shadowColor: '#1a3a5c',
+      fontSize: 26, primaryColor: '#1F4E8B', outlineColor: '#FFFFFF', shadowColor: '#0a1f3a',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'normal',
     },
   },
   {
     id: 'wellness',
     label: 'Wellness',
-    description: 'Calm teal, mindful',
+    description: 'Deeper teal Roboto, mindful',
     tags: ['wellness', 'yoga', 'calm', 'mindful', 'health', 'meditation', 'breathing', 'spa', 'self-care', 'zen'],
+    // Round-6 (claude a11y): #00D9B1 was 2.7:1 vs gray. Darkened to #00876D for AA compliance
+    // while preserving the calm-teal personality.
     style: {
       fontFamily: 'Roboto',
-      fontSize: 26, primaryColor: '#00D9B1', outlineColor: '#FFFFFF', shadowColor: '#005c4d',
+      fontSize: 26, primaryColor: '#00876D', outlineColor: '#FFFFFF', shadowColor: '#003a30',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'capitalize',
     },
   },
@@ -263,10 +274,10 @@ export const PRESET_CATALOG: VibePreset[] = [
     },
   },
   {
-    id: 'pod_p',
-    label: 'Pod P',
-    description: 'Chromatic-aberration RGB split with CRT scanlines',
-    tags: ['glitch', 'chromatic', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber', 'crt', 'scanlines'],
+    id: 'chromatic',
+    label: 'Chromatic',
+    description: 'Cyan/magenta/yellow RGB split + CRT scanlines (Submagic "Pod P")',
+    tags: ['chromatic', 'glitch', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber', 'crt', 'scanlines', 'pod_p', 'pod'],
     style: {
       fontFamily: 'Anton',
       fontSize: 32, primaryColor: '#FFFFFF', outlineColor: 'transparent', shadowColor: '#000000',
@@ -288,10 +299,10 @@ export const PRESET_CATALOG: VibePreset[] = [
     preview: { sampleText: 'TO GET STARTED', stackWords: true },
   },
   {
-    id: 'beasty',
-    label: 'Beasty',
-    description: 'Clean white Montserrat Black, the canonical MrBeast caption',
-    tags: ['beasty', 'mrbeast', 'creator', 'youtube', 'vlog', 'commentary', 'reaction'],
+    id: 'creator_clean',
+    label: 'Creator Clean',
+    description: 'Mixed-case Montserrat Black on dark — the canonical creator/MrBeast caption',
+    tags: ['creator', 'clean', 'mrbeast', 'beasty', 'youtube', 'vlog', 'commentary', 'reaction', 'classic'],
     style: {
       fontFamily: 'Montserrat Black',
       fontSize: 28, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#000000',
@@ -299,10 +310,10 @@ export const PRESET_CATALOG: VibePreset[] = [
     },
   },
   {
-    id: 'youshaei',
-    label: 'Youshaei',
-    description: 'White Montserrat ExtraBold inside black box pill',
-    tags: ['youshaei', 'sticker', 'black-box', 'highlight', 'callout', 'announcement'],
+    id: 'pill_dark',
+    label: 'Pill Dark',
+    description: 'White Montserrat Black inside black sticker pill (Submagic "Youshaei")',
+    tags: ['pill', 'dark', 'sticker', 'black-box', 'youshaei', 'cutout', 'highlight', 'callout', 'announcement'],
     style: {
       fontFamily: 'Montserrat Black',
       fontSize: 26, primaryColor: '#FFFFFF', outlineColor: '#0A0A0A', shadowColor: '#000000AA',
@@ -313,12 +324,15 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'mozi',
     label: 'Mozi',
-    description: 'Neon lime Anton, 2-line stack, max viral energy',
-    tags: ['mozi', 'neon', 'lime', 'viral', 'attention', 'shock', 'breakdown'],
+    description: 'Neon lime Teko in 2-line stack',
+    tags: ['mozi', 'neon', 'lime', 'attention', 'reaction', 'callout', 'highlight'],
+    // Round-6 (claude typography): Anton was repeated on both chromatic AND mozi.
+    // Moved to Teko — denser condensed sans, distinct from chromatic, keeps the
+    // viral-stack character.
     style: {
-      fontFamily: 'Anton',
-      fontSize: 32, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
-      bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
+      fontFamily: 'Teko',
+      fontSize: 36, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
     preview: {
       lines: [{ text: 'TO GET' }, { text: 'STARTED' }],
@@ -390,6 +404,43 @@ export const PRESET_CATALOG: VibePreset[] = [
         { text: 'New',     primaryColor: '#0A0A0A', outlineColor: '#FFE600', borderStyle: 'box', textCase: 'capitalize', scale: 0.8 },
         { text: 'started', primaryColor: '#39FF14', outlineColor: '#000000', borderStyle: 'outline', textCase: 'lowercase', fontFamily: 'Rubik', scale: 1.0 },
       ],
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Modern TikTok verticals (codex round-6 swarm: missing native-platform vibes)
+  // -------------------------------------------------------------------------
+  {
+    id: 'grwm_soft',
+    label: 'GRWM Soft',
+    description: 'Soft cream Poppins lowercase, beauty/fashion vlog aesthetic',
+    tags: ['grwm', 'getready', 'beauty', 'fashion', 'soft', 'aesthetic', 'morning', 'routine', 'makeup', 'skincare', 'cottagecore', 'pink'],
+    style: {
+      fontFamily: 'Poppins',
+      fontSize: 24, primaryColor: '#FFF5F0', outlineColor: '#C9A091', shadowColor: '#3a1f1a66',
+      bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'lowercase',
+    },
+  },
+  {
+    id: 'day_vlog',
+    label: 'Day Vlog',
+    description: 'Minimal lowercase Poppins on subtle outline — daily vlog aesthetic',
+    tags: ['vlog', 'day', 'daily', 'lifestyle', 'minimal', 'casual', 'diary', 'journal', 'simple'],
+    style: {
+      fontFamily: 'Poppins',
+      fontSize: 22, primaryColor: '#F4F4F4', outlineColor: '#1A1A1A', shadowColor: '#00000066',
+      bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'normal',
+    },
+  },
+  {
+    id: 'true_crime',
+    label: 'True Crime',
+    description: 'Cold off-white Roboto with deep navy outline — narration / documentary',
+    tags: ['truecrime', 'true-crime', 'crime', 'mystery', 'documentary', 'narration', 'whisper', 'detective', 'unsolved', 'investigation', 'cold', 'serious'],
+    style: {
+      fontFamily: 'Roboto',
+      fontSize: 26, primaryColor: '#E8E4DC', outlineColor: '#0C1B2E', shadowColor: '#000000AA',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'normal',
     },
   },
 ];

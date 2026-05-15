@@ -9,7 +9,7 @@ tiktok-caps generate clip.mp4 --vibe "horror"
 
 ## Why
 
-Drag a vibe phrase ("horror", "luxury", "cottagecore witch tutorial") at a CLI; get a stylish caption file back in seconds. 23 hand-tuned presets cover the common TikTok aesthetics, including direct replicas of Submagic's named styles (Karaoke, Deep Diver, Pod P, Popline, Beasty, Youshaei, Mozi, Glitch Infinite, Seamless Bounce, Baby Earthquake, Bounce Label). An LLM stylist (Together AI / Llama-4-Maverick) maps any free-form vibe to the closest preset; a keyword scorer is the offline fallback.
+Drag a vibe phrase ("horror", "luxury", "cottagecore witch tutorial") at a CLI; get a stylish caption file back in seconds. 26 hand-tuned presets cover the common TikTok aesthetics: 12 semantic-vibe presets, 11 Submagic-inspired editor styles (Karaoke, Deep Diver, Chromatic [née Pod P], Popline, Creator Clean [née Beasty], Pill Dark [née Youshaei], Mozi, Glitch Infinite, Seamless Bounce, Baby Earthquake, Bounce Label), and 3 modern vertical-aligned styles (GRWM Soft, Day Vlog, True Crime). An LLM stylist (Together AI / Llama-4-Maverick) maps any free-form vibe to the closest preset; a keyword scorer is the offline fallback.
 
 Built on patterns from the (private) smart-clip reference: ASS subtitle generation with proper BGR color encoding, font-size scaling vs video height, opaque-box (`BorderStyle=3`) pill captions, and a curated SIL-OFL font catalog.
 
@@ -83,15 +83,23 @@ tiktok-caps pick "spooky witch tutorial"
 |---|---|---|
 | `karaoke` | Montserrat Black | Bold caps with one word highlighted in lime pill (v2: rolls per word) |
 | `deep_diver` | Poppins | Dark lowercase inside cream sticker pill |
-| `pod_p` | Anton | Cyan/magenta/yellow chromatic split with CRT scanlines |
+| `chromatic` | Anton | Cyan/magenta/yellow RGB split + CRT scanlines (was: `pod_p`) |
 | `popline` | Bebas Neue | Tall condensed white caps, stacked one word per line |
-| `beasty` | Montserrat Black | Clean MrBeast-style mixed case |
-| `youshaei` | Montserrat Black | White caps inside black box pill |
-| `mozi` | Anton | Two-line stacked neon lime caps |
+| `creator_clean` | Montserrat Black | Mixed-case white on dark — canonical creator caption (was: `beasty`) |
+| `pill_dark` | Montserrat Black | White caps inside black sticker pill (was: `youshaei`) |
+| `mozi` | Teko | Two-line stacked neon lime caps |
 | `glitch_infinite` | Rubik | Yellow "New" pill + red glitch text below |
 | `bounce_label` | Rubik | Black caps inside yellow pill (single-line label) |
 | `seamless_bounce` | Rubik | "New" pill + lime "started" — bounce animation in v2 |
 | `baby_earthquake` | Rubik | "New" pill + lime "started" — earthquake/shake animation in v2 |
+
+### Modern vertical-aligned presets (round-6 swarm critique)
+
+| presetId | Font | Use case |
+|---|---|---|
+| `grwm_soft` | Poppins | Beauty/fashion get-ready-with-me, soft cream + cocoa |
+| `day_vlog` | Poppins | Minimal daily-vlog aesthetic, casual normal case |
+| `true_crime` | Roboto | Cold off-white + deep navy for narration / documentary |
 
 ### Localhost preview gallery
 

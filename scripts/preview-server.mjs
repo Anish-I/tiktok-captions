@@ -50,6 +50,7 @@ function fontFaceCss() {
 }
 
 const SAMPLE_BY_PRESET = {
+  // Vibe presets
   horror: 'A WITCH lurked in the dark.',
   luxury: 'Champagne, please.',
   comedy: 'WAIT FOR IT...',
@@ -62,17 +63,22 @@ const SAMPLE_BY_PRESET = {
   educational: 'Step 1 of 3',
   wellness: 'Inhale. Exhale.',
   cinematic: 'IN A WORLD',
+  // Submagic-inspired (renamed: pod_p -> chromatic, beasty -> creator_clean, youshaei -> pill_dark)
   karaoke: 'TO GET STARTED',
   deep_diver: 'to get started',
-  pod_p: 'TO GET',
+  chromatic: 'TO GET',
   popline: 'TO GET STARTED',
-  beasty: 'To get STARTED',
-  youshaei: 'TO GET STARTED',
+  creator_clean: 'To get STARTED',
+  pill_dark: 'TO GET STARTED',
   mozi: 'TO GET STARTED',
   glitch_infinite: 'STARTED',
   bounce_label: 'NEW',
   seamless_bounce: 'New started',
   baby_earthquake: 'New started',
+  // Modern TikTok verticals
+  grwm_soft: 'getting ready with you',
+  day_vlog: 'today felt different',
+  true_crime: 'WHAT HAPPENED NEXT',
 };
 
 const BASE_FONT_PX = 36;
