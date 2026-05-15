@@ -63,13 +63,13 @@ const SAMPLE_BY_PRESET = {
   educational: 'Step 1 of 3',
   wellness: 'Inhale. Exhale.',
   cinematic: 'IN A WORLD',
-  // Submagic-inspired (renamed: pod_p -> chromatic, beasty -> creator_clean, youshaei -> pill_dark)
+  // Submagic-inspired (round-7 renames: creator_clean -> editorial, pill_dark -> karaoke_dim)
   karaoke: 'TO GET STARTED',
-  deep_diver: 'to get started',
+  deep_diver: 'To get started',
   chromatic: 'TO GET',
   popline: 'TO GET STARTED',
-  creator_clean: 'To get STARTED',
-  pill_dark: 'TO GET STARTED',
+  editorial: 'TO GET',
+  karaoke_dim: 'TO GET STARTED',
   mozi: 'TO GET STARTED',
   glitch_infinite: 'STARTED',
   bounce_label: 'NEW',
@@ -155,6 +155,33 @@ function mergeLine(base, line) {
   };
 }
 
+/** Render a single inline word with per-word overrides on top of the preset's base style. */
+function renderWord(word, baseStyle) {
+  const fontFamily = word.fontFamily ?? baseStyle.fontFamily;
+  const cssFontFamily = fontFamily === 'Montserrat Black' ? 'Montserrat' : fontFamily;
+  const isBold = word.bold ?? (baseStyle.bold || /Black|ExtraBold/.test(fontFamily));
+  const isItalic = word.italic ?? baseStyle.italic;
+  const fontWeight = isBold ? 900 : 600;
+  const color = word.primaryColor ?? baseStyle.primaryColor;
+  const px = Math.round(BASE_FONT_PX * (word.scale ?? 1));
+  const bgCss = word.bg
+    ? `background:${word.bg}; padding: 0 0.22em; border-radius: 0.14em; -webkit-text-stroke: 0; text-shadow: none;`
+    : '';
+  // Explicit inter-word margin instead of relying on text whitespace — flex
+  // parents collapse whitespace between span children, so this guarantees
+  // visible word separation in every rendering context.
+  return `<span class="word" style="
+    font-family: '${cssFontFamily}', sans-serif;
+    font-weight: ${fontWeight};
+    font-style: ${isItalic ? 'italic' : 'normal'};
+    color: ${color};
+    font-size: ${px}px;
+    line-height: 1.12;
+    margin-right: 0.32em;
+    ${bgCss}
+  ">${escapeHtml(word.text)}</span>`;
+}
+
 function renderSpan(htmlBody, style, scale = 1) {
   return `<span class="caption" style="${captionCss(style, scale).replace(/\s+/g, ' ')}">${htmlBody}</span>`;
 }
@@ -194,6 +221,25 @@ function renderCardBody(preset) {
       const cased = applyTextCase(line.text, merged.textCase);
       return wrapLine(renderSpan(escapeHtml(cased), merged, line.scale ?? 1));
     }).join('');
+  }
+
+  // Per-word styling (karaoke-state): each word gets its own color/bold/bg.
+  if (hints.words && hints.words.length > 0) {
+    // Apply preset textCase to each word's text. Words are joined with no separator
+    // because each word span carries its own margin-right (whitespace would be
+    // collapsed by flex parents anyway).
+    const wordsHtml = hints.words
+      .map(w => renderWord({ ...w, text: applyTextCase(w.text, base.textCase) }, base))
+      .join('');
+
+    // For box-style presets (deep_diver), the WHOLE row sits inside one pill —
+    // wrap the word row in the preset's outline-mode span. For outline-style
+    // presets (karaoke_dim), wrap in an inline-block span so the parent .caption-line
+    // (display: flex) doesn't collapse text whitespace between word spans.
+    if (base.borderStyle === 'box') {
+      return wrapLine(renderSpan(wordsHtml, base));
+    }
+    return wrapLine(`<span style="display: inline-block;">${wordsHtml}</span>`);
   }
 
   let text = hints.sampleText ?? SAMPLE_BY_PRESET[preset.id] ?? 'Sample caption text';

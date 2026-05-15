@@ -19,10 +19,10 @@ export type PresetId =
   // v1 is static; word-highlight and animation arrive in v2.
   | 'karaoke'
   | 'deep_diver'
-  | 'chromatic'        // was: pod_p (consensus rename — describe technique, not source folder)
+  | 'chromatic'        // was: pod_p
   | 'popline'
-  | 'creator_clean'    // was: beasty (avoid creator-IP coupling)
-  | 'pill_dark'        // was: youshaei (avoid creator-IP coupling)
+  | 'editorial'        // was: creator_clean / beasty (round-7: actual visual is italic serif, not bold sans)
+  | 'karaoke_dim'      // was: pill_dark / youshaei (round-7: no pill, karaoke-grey dim aesthetic)
   | 'mozi'
   | 'glitch_infinite'
   | 'bounce_label'
@@ -57,6 +57,28 @@ export interface PresetLine {
 }
 
 /**
+ * Per-word styling override for karaoke-state compositions. Each WordSpec is
+ * one inline word in the gallery rendering. Words are joined by spaces (no
+ * line break between them — use `lines` for that).
+ *
+ * Use this to express the "current word vivid, upcoming words dim" aesthetic
+ * shared by Submagic's Youshaei, Deep Diver, and Karaoke presets.
+ */
+export interface WordSpec {
+  text: string;
+  /** Override text color for this word (e.g. dim '#888' for upcoming words). */
+  primaryColor?: string;
+  /** Pill background behind this word (karaoke highlight). */
+  bg?: string;
+  /** Override font for this word (rare — e.g. italicizing only a name). */
+  fontFamily?: string;
+  bold?: boolean;
+  italic?: boolean;
+  /** Relative size multiplier vs the preset's base fontSize. */
+  scale?: number;
+}
+
+/**
  * Preview-only metadata: gallery rendering hints, NOT subtitle output.
  * The ASS renderer ignores this entire field. Use it to convey compositional
  * intent (multi-line layouts, word-highlights, CRT scanlines) for v1's gallery
@@ -67,9 +89,15 @@ export interface PresetPreviewHints {
   sampleText?: string;
   /**
    * Multi-element composition: one styled span per line, stacked vertically.
-   * When provided, takes precedence over `sampleText` + `highlightWord`.
+   * Takes precedence over `sampleText`, `highlightWord`, and `words`.
    */
   lines?: PresetLine[];
+  /**
+   * Per-word inline styling — same line, different colors/weights per word.
+   * Used for karaoke-state variants (one word vivid, rest dimmed grey).
+   * Takes precedence over `sampleText` + `highlightWord`.
+   */
+  words?: WordSpec[];
   /** Highlight one word with a colored background pill (karaoke base). */
   highlightWord?: {
     /** Zero-based word index in the sample text. */
@@ -264,23 +292,37 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'deep_diver',
     label: 'Deep Diver',
-    description: 'Lowercase Poppins on cream sticker pill',
-    tags: ['sticker', 'pill', 'cream', 'minimalist', 'aesthetic', 'lifestyle', 'vlog', 'soft'],
+    description: 'Cream pill with karaoke-dim: current word bold black, upcoming words dim grey',
+    tags: ['sticker', 'pill', 'cream', 'minimalist', 'aesthetic', 'lifestyle', 'vlog', 'soft', 'karaoke', 'reveal'],
+    // Round-7: matches Submagic Deep Diver more accurately — the pill shows
+    // word-by-word reveal state (bold current + dim upcoming) instead of all words equal.
     style: {
       fontFamily: 'Poppins',
       fontSize: 26, primaryColor: '#1A1A1A', outlineColor: '#F5F5DC', shadowColor: '#00000066',
-      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'lowercase',
+      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'capitalize',
       borderStyle: 'box',
+    },
+    preview: {
+      // The whole row sits inside one cream pill (the preset's box) — words inside
+      // share the pill bg. Bold "To" + dim "get started" simulates karaoke state.
+      sampleText: 'To get started',
+      words: [
+        { text: 'To',      primaryColor: '#0A0A0A', bold: true },
+        { text: 'get',     primaryColor: '#888888', bold: false },
+        { text: 'started', primaryColor: '#888888', bold: false },
+      ],
     },
   },
   {
     id: 'chromatic',
     label: 'Chromatic',
-    description: 'Cyan/magenta/yellow RGB split + CRT scanlines (Submagic "Pod P")',
-    tags: ['chromatic', 'glitch', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber', 'crt', 'scanlines', 'pod_p', 'pod'],
+    description: 'Hot-pink magenta with cyan chromatic offset + CRT scanlines (Submagic "Pod P")',
+    tags: ['chromatic', 'glitch', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber', 'crt', 'scanlines', 'pod_p', 'pod', 'magenta', 'pink'],
+    // Round-7: Submagic's Pod P uses MAGENTA as primary (not white). The cyan/yellow
+    // shadows are offsets behind/around the magenta fill — that's the chromatic effect.
     style: {
       fontFamily: 'Anton',
-      fontSize: 32, primaryColor: '#FFFFFF', outlineColor: 'transparent', shadowColor: '#000000',
+      fontSize: 32, primaryColor: '#FF1493', outlineColor: 'transparent', shadowColor: '#000000',
       bold: false, italic: false, alignment: 'center', showShadow: false, textCase: 'uppercase',
       effects: { chromaticAberration: true },
     },
@@ -289,53 +331,75 @@ export const PRESET_CATALOG: VibePreset[] = [
   {
     id: 'popline',
     label: 'Popline',
-    description: 'Tall condensed Bebas Neue stacked one word per line',
-    tags: ['popline', 'tall', 'condensed', 'stacked', 'minimal', 'editorial', 'clean'],
+    description: 'Stacked condensed white caps with a violet swipe highlight through one word',
+    tags: ['popline', 'tall', 'condensed', 'stacked', 'editorial', 'clean', 'swipe', 'highlight', 'violet'],
     style: {
       fontFamily: 'Bebas Neue',
       fontSize: 32, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#00000088',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
-    preview: { sampleText: 'TO GET STARTED', stackWords: true },
-  },
-  {
-    id: 'creator_clean',
-    label: 'Creator Clean',
-    description: 'Mixed-case Montserrat Black on dark — the canonical creator/MrBeast caption',
-    tags: ['creator', 'clean', 'mrbeast', 'beasty', 'youtube', 'vlog', 'commentary', 'reaction', 'classic'],
-    style: {
-      fontFamily: 'Montserrat Black',
-      fontSize: 28, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#000000',
-      bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'normal',
+    // Round-7: Submagic Popline has a violet/purple highlight passing through one of
+    // the stacked lines (the "current" word). Express via per-line styling.
+    preview: {
+      lines: [
+        { text: 'TO' },
+        { text: 'GET',     primaryColor: '#FFFFFF', outlineColor: '#8A2BE2', borderStyle: 'box' },
+        { text: 'STARTED' },
+      ],
     },
   },
   {
-    id: 'pill_dark',
-    label: 'Pill Dark',
-    description: 'White Montserrat Black inside black sticker pill (Submagic "Youshaei")',
-    tags: ['pill', 'dark', 'sticker', 'black-box', 'youshaei', 'cutout', 'highlight', 'callout', 'announcement'],
+    id: 'editorial',
+    label: 'Editorial',
+    description: 'Tiny italic serif in muted grey — quiet/literary tone (Submagic "Beasty")',
+    tags: ['editorial', 'serif', 'italic', 'literary', 'quiet', 'essay', 'subtle', 'understated', 'beasty'],
+    // Round-7: Submagic's "Beasty" is NOT a MrBeast big-bold caption — it's a TINY
+    // ITALIC SERIF, dark/quiet, very literary. Renamed to match the actual visual.
+    style: {
+      fontFamily: 'DM Serif Display',
+      fontSize: 22, primaryColor: '#B5B5B5', outlineColor: 'transparent', shadowColor: '#00000044',
+      bold: false, italic: true, alignment: 'center', showShadow: false, textCase: 'uppercase',
+    },
+    preview: { sampleText: 'TO GET' },
+  },
+  {
+    id: 'karaoke_dim',
+    label: 'Karaoke Dim',
+    description: 'Single word in vivid color + rest of line dim grey (Submagic "Youshaei")',
+    tags: ['karaoke', 'dim', 'grey', 'reveal', 'youshaei', 'word-state', 'highlight', 'current-word'],
+    // Round-7: Submagic's Youshaei is NOT a black box pill — it's karaoke-dim where
+    // the current word is teal/green and upcoming words are dim grey. No pill at all.
     style: {
       fontFamily: 'Montserrat Black',
-      fontSize: 26, primaryColor: '#FFFFFF', outlineColor: '#0A0A0A', shadowColor: '#000000AA',
+      fontSize: 26, primaryColor: '#FFFFFF', outlineColor: 'transparent', shadowColor: '#000000AA',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
-      borderStyle: 'box',
+    },
+    preview: {
+      sampleText: 'TO GET STARTED',
+      words: [
+        { text: 'TO',      primaryColor: '#00D9B1' },           // current — teal vivid
+        { text: 'GET',     primaryColor: '#888888' },           // upcoming — dim
+        { text: 'STARTED', primaryColor: '#888888' },           // upcoming — dim
+      ],
     },
   },
   {
     id: 'mozi',
     label: 'Mozi',
-    description: 'Neon lime Teko in 2-line stack',
-    tags: ['mozi', 'neon', 'lime', 'attention', 'reaction', 'callout', 'highlight'],
-    // Round-6 (claude typography): Anton was repeated on both chromatic AND mozi.
-    // Moved to Teko — denser condensed sans, distinct from chromatic, keeps the
-    // viral-stack character.
+    description: '2-line stack: white top line + lime green bottom line (the emphasis word)',
+    tags: ['mozi', 'neon', 'lime', 'two-color', 'emphasis', 'attention', 'reaction', 'callout', 'highlight'],
+    // Round-7: Submagic's Mozi is TWO-COLOR — top line white "TO GET", bottom line
+    // lime green "STARTED" (the punchline word emphasized). NOT all-lime as I had it.
     style: {
       fontFamily: 'Teko',
-      fontSize: 36, primaryColor: '#39FF14', outlineColor: '#000000', shadowColor: '#003300',
+      fontSize: 36, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#003300',
       bold: true, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
     preview: {
-      lines: [{ text: 'TO GET' }, { text: 'STARTED' }],
+      lines: [
+        { text: 'TO GET',  primaryColor: '#FFFFFF' },   // setup line, plain white
+        { text: 'STARTED', primaryColor: '#39FF14' },   // punchline word in lime
+      ],
     },
   },
   {

@@ -82,12 +82,12 @@ tiktok-caps pick "spooky witch tutorial"
 | presetId | Font | Layout |
 |---|---|---|
 | `karaoke` | Montserrat Black | Bold caps with one word highlighted in lime pill (v2: rolls per word) |
-| `deep_diver` | Poppins | Dark lowercase inside cream sticker pill |
-| `chromatic` | Anton | Cyan/magenta/yellow RGB split + CRT scanlines (was: `pod_p`) |
-| `popline` | Bebas Neue | Tall condensed white caps, stacked one word per line |
-| `creator_clean` | Montserrat Black | Mixed-case white on dark — canonical creator caption (was: `beasty`) |
-| `pill_dark` | Montserrat Black | White caps inside black sticker pill (was: `youshaei`) |
-| `mozi` | Teko | Two-line stacked neon lime caps |
+| `deep_diver` | Poppins | Cream pill with karaoke-dim: bold current word + grey upcoming words |
+| `chromatic` | Anton | Hot-pink magenta with chromatic cyan offset + CRT scanlines (was: `pod_p`) |
+| `popline` | Bebas Neue | Stacked condensed caps with violet swipe highlight on the current word |
+| `editorial` | DM Serif italic | Tiny italic serif, muted grey — literary/quiet (was: `creator_clean` / `beasty`) |
+| `karaoke_dim` | Montserrat Black | Karaoke-state: vivid teal current word + dim grey upcoming (was: `pill_dark` / `youshaei`) |
+| `mozi` | Teko | Two-color stack: white "TO GET" / lime "STARTED" punchline |
 | `glitch_infinite` | Rubik | Yellow "New" pill + red glitch text below |
 | `bounce_label` | Rubik | Black caps inside yellow pill (single-line label) |
 | `seamless_bounce` | Rubik | "New" pill + lime "started" — bounce animation in v2 |
