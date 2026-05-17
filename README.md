@@ -124,11 +124,12 @@ them before transcription.
 cd ..
 git clone https://github.com/YaoFANGUK/video-subtitle-remover.git
 
-# Python env (3.11+). Heavy first install: PaddleOCR + Torch ≈ 3 GB
+# Python env. Heavy first install: PaddleOCR + Torch ≈ 3 GB
 cd video-subtitle-remover
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pip install paddlepaddle    # platform-specific, not in requirements.txt
 ```
 
 Set `VSR_PATH` if the clone isn't a sibling of this repo:
@@ -139,6 +140,31 @@ export PYTHON_BIN=/path/to/video-subtitle-remover/.venv/bin/python   # optional
 ```
 
 CPU mode works on macOS; CUDA/DirectML acceleration is Windows/Linux only.
+
+#### macOS gotchas (Apple Silicon, Python 3.11)
+
+VSR ships an x86_64 ffmpeg binary at `backend/ffmpeg/macos/ffmpeg`. On Apple
+Silicon without Rosetta it fails with "Bad CPU type in executable" — replace
+it with a symlink to your arm64 ffmpeg (e.g. `brew install ffmpeg`):
+
+```bash
+mv $VSR_PATH/backend/ffmpeg/macos/ffmpeg $VSR_PATH/backend/ffmpeg/macos/ffmpeg.x86_64.bak
+ln -s "$(which ffmpeg)" $VSR_PATH/backend/ffmpeg/macos/ffmpeg
+```
+
+`backend/inpaint/sttn_auto_inpaint.py:245` uses a Python 3.12 nested-quote
+f-string. On Python 3.11 (which VSR's README claims to support) it raises
+`SyntaxError`. One-line patch — change `frame_info['len']` inside the f-string
+to `frame_info["len"]`:
+
+```bash
+sed -i.bak "s/frame_info\\['len'\\]/frame_info[\"len\"]/" \
+  $VSR_PATH/backend/inpaint/sttn_auto_inpaint.py
+```
+
+`--inpaint lama` requires extra PaddleOCR runtime deps that don't ship with
+the wheel — stick with the default `sttn-auto` unless you've debugged the
+paddlex predictor chain.
 
 ### Usage
 

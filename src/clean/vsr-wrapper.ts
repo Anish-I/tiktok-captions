@@ -55,10 +55,15 @@ export function resolveVsrPath(explicit?: string): string {
 
 /** Build the argv `python backend/main.py` should receive. Exported for testing. */
 export function buildVsrArgs(opts: RunVsrOptions, vsrRoot: string): string[] {
+  // VSR runs from its own repo root (we set cwd: vsrRoot when spawning), so any
+  // relative path the caller gave us has to be made absolute against the caller's
+  // CWD or VSR's OpenCV/ffmpeg subprocesses won't find the file.
+  const absIn = isAbsolute(opts.input) ? opts.input : pathResolve(process.cwd(), opts.input);
+  const absOut = isAbsolute(opts.output) ? opts.output : pathResolve(process.cwd(), opts.output);
   const args = [
     join(vsrRoot, 'backend', 'main.py'),
-    '--input', opts.input,
-    '--output', opts.output,
+    '--input', absIn,
+    '--output', absOut,
   ];
   if (opts.inpaintMode) args.push('--inpaint-mode', opts.inpaintMode);
   for (const c of opts.coords ?? []) {

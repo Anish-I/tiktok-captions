@@ -48,16 +48,30 @@ describe('buildVsrArgs', () => {
   const root = '/tmp/fake-vsr';
   const main = `${root}/backend/main.py`;
 
-  it('includes input and output as the first flags', () => {
+  it('includes input and output as the first flags, resolved to absolute paths', () => {
     const args = buildVsrArgs(
       { input: 'in.mp4', output: 'out.mp4' },
       root,
     );
     expect(args[0]).toBe(main);
     expect(args).toContain('--input');
-    expect(args[args.indexOf('--input') + 1]).toBe('in.mp4');
-    expect(args).toContain('--output');
-    expect(args[args.indexOf('--output') + 1]).toBe('out.mp4');
+    // VSR runs from its own repo root, so relative paths must be absolutised
+    // against the caller's CWD before they're handed to argparse.
+    const inArg = args[args.indexOf('--input') + 1]!;
+    const outArg = args[args.indexOf('--output') + 1]!;
+    expect(inArg.endsWith('/in.mp4')).toBe(true);
+    expect(outArg.endsWith('/out.mp4')).toBe(true);
+    expect(inArg.startsWith('/')).toBe(true);
+    expect(outArg.startsWith('/')).toBe(true);
+  });
+
+  it('leaves already-absolute paths untouched', () => {
+    const args = buildVsrArgs(
+      { input: '/abs/in.mp4', output: '/abs/out.mp4' },
+      root,
+    );
+    expect(args[args.indexOf('--input') + 1]).toBe('/abs/in.mp4');
+    expect(args[args.indexOf('--output') + 1]).toBe('/abs/out.mp4');
   });
 
   it('emits --subtitle-area-coords once per coord with 4 numeric args', () => {
