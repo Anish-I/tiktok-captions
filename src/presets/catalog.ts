@@ -19,10 +19,10 @@ export type PresetId =
   // v1 is static; word-highlight and animation arrive in v2.
   | 'karaoke'
   | 'deep_diver'
-  | 'chromatic'        // was: pod_p
+  | 'pod_p'            // round-8: was 'chromatic'; restored Submagic gallery name
   | 'popline'
-  | 'editorial'        // was: creator_clean / beasty (round-7: actual visual is italic serif, not bold sans)
-  | 'karaoke_dim'      // was: pill_dark / youshaei (round-7: no pill, karaoke-grey dim aesthetic)
+  | 'beasty'           // round-8: was 'editorial' / 'creator_clean'; tiny italic serif inside a dark pill
+  | 'youshaei'         // round-8: was 'karaoke_dim' / 'pill_dark'; teal current + dim-grey upcoming
   | 'mozi'
   | 'glitch_infinite'
   | 'bounce_label'
@@ -314,61 +314,65 @@ export const PRESET_CATALOG: VibePreset[] = [
     },
   },
   {
-    id: 'chromatic',
-    label: 'Chromatic',
-    description: 'Hot-pink magenta with cyan chromatic offset + CRT scanlines (Submagic "Pod P")',
-    tags: ['chromatic', 'glitch', 'rgb', 'cyberpunk', 'vhs', 'retro', 'rave', 'cyber', 'crt', 'scanlines', 'pod_p', 'pod', 'magenta', 'pink'],
-    // Round-7: Submagic's Pod P uses MAGENTA as primary (not white). The cyan/yellow
-    // shadows are offsets behind/around the magenta fill — that's the chromatic effect.
+    id: 'pod_p',
+    label: 'Pod P',
+    description: 'Hot-pink magenta caps on dark — clean (no chromatic, no scanlines)',
+    tags: ['pod_p', 'pod', 'podcast', 'magenta', 'pink', 'hot-pink', 'vivid', 'attention', 'callout', 'highlight'],
+    // Round-8: matched Submagic gallery thumb — Pod P is just bold magenta caps,
+    // no chromatic aberration or CRT overlay (those were our embellishments). The
+    // hot-pink magenta on dark video is the whole identity.
     style: {
       fontFamily: 'Anton',
       fontSize: 32, primaryColor: '#FF1493', outlineColor: 'transparent', shadowColor: '#000000',
       bold: false, italic: false, alignment: 'center', showShadow: false, textCase: 'uppercase',
-      effects: { chromaticAberration: true },
     },
-    preview: { scanlines: true },
+    preview: { sampleText: 'TO GET' },
   },
   {
     id: 'popline',
     label: 'Popline',
-    description: 'Stacked condensed white caps with a violet swipe highlight through one word',
-    tags: ['popline', 'tall', 'condensed', 'stacked', 'editorial', 'clean', 'swipe', 'highlight', 'violet'],
+    description: 'Big white "TO" + small pink "GET STARTED" tucked underneath — two-size headline',
+    tags: ['popline', 'tall', 'condensed', 'two-size', 'headline', 'editorial-pop', 'pink', 'magenta', 'callout'],
     style: {
       fontFamily: 'Bebas Neue',
       fontSize: 32, primaryColor: '#FFFFFF', outlineColor: '#000000', shadowColor: '#00000088',
       bold: false, italic: false, alignment: 'center', showShadow: true, textCase: 'uppercase',
     },
-    // Round-7: Submagic Popline has a violet/purple highlight passing through one of
-    // the stacked lines (the "current" word). Express via per-line styling.
+    // Round-8: Submagic Popline reads as TWO sizes — a big white setup word on top
+    // and a small pink accent line below it ("GET STARTED" in the gallery thumb).
+    // Express via two lines with very different `scale` values.
     preview: {
       lines: [
-        { text: 'TO' },
-        { text: 'GET',     primaryColor: '#FFFFFF', outlineColor: '#8A2BE2', borderStyle: 'box' },
-        { text: 'STARTED' },
+        { text: 'TO',          scale: 1.6, primaryColor: '#FFFFFF' },
+        { text: 'GET STARTED', scale: 0.55, primaryColor: '#FF6BB5' },
       ],
     },
   },
   {
-    id: 'editorial',
-    label: 'Editorial',
-    description: 'Tiny italic serif in muted grey — quiet/literary tone (Submagic "Beasty")',
-    tags: ['editorial', 'serif', 'italic', 'literary', 'quiet', 'essay', 'subtle', 'understated', 'beasty'],
-    // Round-7: Submagic's "Beasty" is NOT a MrBeast big-bold caption — it's a TINY
-    // ITALIC SERIF, dark/quiet, very literary. Renamed to match the actual visual.
+    id: 'beasty',
+    label: 'Beasty',
+    description: 'Tiny white italic serif inside a dark rounded pill — quiet/literary',
+    tags: ['beasty', 'serif', 'italic', 'literary', 'quiet', 'essay', 'subtle', 'understated', 'pill', 'sticker'],
+    // Round-8: matched Submagic gallery thumb — Beasty is a tiny italic serif sitting
+    // inside a soft dark-grey pill, NOT outlined-on-video. Per [[ass-borderstyle-box-captions]]
+    // BorderStyle=3, outlineColor doubles as box fill; BackColour must match outline
+    // (renderer pins them together when borderStyle='box').
     style: {
       fontFamily: 'DM Serif Display',
-      fontSize: 22, primaryColor: '#B5B5B5', outlineColor: 'transparent', shadowColor: '#00000044',
+      fontSize: 22, primaryColor: '#FFFFFF', outlineColor: '#2A2A2A', shadowColor: '#2A2A2A',
       bold: false, italic: true, alignment: 'center', showShadow: false, textCase: 'uppercase',
+      borderStyle: 'box',
     },
     preview: { sampleText: 'TO GET' },
   },
   {
-    id: 'karaoke_dim',
-    label: 'Karaoke Dim',
-    description: 'Single word in vivid color + rest of line dim grey (Submagic "Youshaei")',
-    tags: ['karaoke', 'dim', 'grey', 'reveal', 'youshaei', 'word-state', 'highlight', 'current-word'],
-    // Round-7: Submagic's Youshaei is NOT a black box pill — it's karaoke-dim where
-    // the current word is teal/green and upcoming words are dim grey. No pill at all.
+    id: 'youshaei',
+    label: 'Youshaei',
+    description: 'Single word in vivid teal + rest of line dim grey — karaoke reveal state',
+    tags: ['youshaei', 'karaoke', 'dim', 'grey', 'reveal', 'word-state', 'highlight', 'current-word', 'teal'],
+    // Round-8: bumped teal from #00D9B1 to #5EEAD4 — Submagic's gallery thumb reads
+    // brighter/cooler than our earlier value. Still no pill; the "current" word just
+    // pops in vivid teal while upcoming words sit in dim grey.
     style: {
       fontFamily: 'Montserrat Black',
       fontSize: 26, primaryColor: '#FFFFFF', outlineColor: 'transparent', shadowColor: '#000000AA',
@@ -377,7 +381,7 @@ export const PRESET_CATALOG: VibePreset[] = [
     preview: {
       sampleText: 'TO GET STARTED',
       words: [
-        { text: 'TO',      primaryColor: '#00D9B1' },           // current — teal vivid
+        { text: 'TO',      primaryColor: '#5EEAD4' },           // current — teal vivid
         { text: 'GET',     primaryColor: '#888888' },           // upcoming — dim
         { text: 'STARTED', primaryColor: '#888888' },           // upcoming — dim
       ],

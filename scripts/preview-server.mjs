@@ -63,13 +63,14 @@ const SAMPLE_BY_PRESET = {
   educational: 'Step 1 of 3',
   wellness: 'Inhale. Exhale.',
   cinematic: 'IN A WORLD',
-  // Submagic-inspired (round-7 renames: creator_clean -> editorial, pill_dark -> karaoke_dim)
+  // Submagic-inspired (round-8 names restored to gallery: pod_p / beasty / youshaei).
+  // Each preset's `preview.sampleText` / `lines` / `words` overrides this fallback.
   karaoke: 'TO GET STARTED',
   deep_diver: 'To get started',
-  chromatic: 'TO GET',
+  pod_p: 'TO GET',
   popline: 'TO GET STARTED',
-  editorial: 'TO GET',
-  karaoke_dim: 'TO GET STARTED',
+  beasty: 'TO GET',
+  youshaei: 'TO GET STARTED',
   mozi: 'TO GET STARTED',
   glitch_infinite: 'STARTED',
   bounce_label: 'NEW',
