@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { generate } from './pipeline.js';
 import { pickPreset, keywordPick } from './presets/picker.js';
 import { PRESET_CATALOG, listPresetIds, getPreset } from './presets/catalog.js';
+import { runVsr, type InpaintMode, type VsrCoords } from './clean/vsr-wrapper.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -110,6 +111,47 @@ program
       process.exit(1);
     }
     process.stdout.write(JSON.stringify(p, null, 2) + '\n');
+  });
+
+program
+  .command('clean')
+  .description('Strip hard-burned subtitles from a video using video-subtitle-remover (Python).')
+  .argument('<input>', 'input video file')
+  .option('-o, --out <path>', 'output path (default: <basename>-clean<ext> next to input)')
+  .option(
+    '-c, --coords <y1,y2,x1,x2>',
+    'subtitle area coords (ymin,ymax,xmin,xmax). Repeat for multiple regions; omit to auto-detect.',
+    (val: string, acc: VsrCoords[]): VsrCoords[] => {
+      const parts = val.split(/[\s,]+/).map(Number);
+      if (parts.length !== 4 || parts.some(Number.isNaN)) {
+        throw new Error(`--coords expects 4 numbers (y1,y2,x1,x2), got "${val}"`);
+      }
+      const coord: VsrCoords = { yMin: parts[0]!, yMax: parts[1]!, xMin: parts[2]!, xMax: parts[3]! };
+      return [...acc, coord];
+    },
+    [] as VsrCoords[],
+  )
+  .option(
+    '--inpaint <mode>',
+    'inpaint backend: sttn-auto | sttn-det | lama | propainter | opencv',
+    'sttn-auto',
+  )
+  .option('--vsr-path <dir>', 'override path to the video-subtitle-remover clone')
+  .option('--python <bin>', 'python interpreter (default: $PYTHON_BIN or python3)')
+  .action(async (input: string, opts) => {
+    const out: string = opts.out ?? join(
+      dirname(input),
+      `${basename(input, extname(input))}-clean${extname(input) || '.mp4'}`,
+    );
+    const result = await runVsr({
+      input,
+      output: out,
+      coords: opts.coords?.length ? opts.coords : undefined,
+      inpaintMode: opts.inpaint as InpaintMode,
+      pythonBin: opts.python,
+      vsrPath: opts.vsrPath,
+    });
+    process.stdout.write(`wrote:  ${result.output}\n`);
   });
 
 program.parseAsync().catch((err) => {

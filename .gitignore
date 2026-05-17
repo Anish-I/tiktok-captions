@@ -15,6 +15,9 @@ out/
 !test/fixtures/*.wav
 !test/fixtures/*.mp4
 
+# Local MCP scratch
+ruvector.db
+
 # IDE
 .idea/
 *.swp

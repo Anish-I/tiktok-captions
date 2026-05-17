@@ -83,10 +83,10 @@ tiktok-caps pick "spooky witch tutorial"
 |---|---|---|
 | `karaoke` | Montserrat Black | Bold caps with one word highlighted in lime pill (v2: rolls per word) |
 | `deep_diver` | Poppins | Cream pill with karaoke-dim: bold current word + grey upcoming words |
-| `chromatic` | Anton | Hot-pink magenta with chromatic cyan offset + CRT scanlines (was: `pod_p`) |
-| `popline` | Bebas Neue | Stacked condensed caps with violet swipe highlight on the current word |
-| `editorial` | DM Serif italic | Tiny italic serif, muted grey — literary/quiet (was: `creator_clean` / `beasty`) |
-| `karaoke_dim` | Montserrat Black | Karaoke-state: vivid teal current word + dim grey upcoming (was: `pill_dark` / `youshaei`) |
+| `pod_p` | Anton | Hot-pink magenta caps on dark — clean (no chromatic, no scanlines) |
+| `popline` | Bebas Neue | Big white setup word + small pink accent line tucked underneath — two-size headline |
+| `beasty` | DM Serif italic | Tiny white italic serif inside a dark rounded pill — quiet/literary |
+| `youshaei` | Montserrat Black | Karaoke-state: vivid teal current word + dim grey upcoming |
 | `mozi` | Teko | Two-color stack: white "TO GET" / lime "STARTED" punchline |
 | `glitch_infinite` | Rubik | Yellow "New" pill + red glitch text below |
 | `bounce_label` | Rubik | Black caps inside yellow pill (single-line label) |
@@ -107,6 +107,57 @@ tiktok-caps pick "spooky witch tutorial"
 node scripts/preview-server.mjs
 # open http://127.0.0.1:5555 to see all 23 presets rendered with @font-face,
 # plus an interactive vibe-picker that calls /api/pick
+```
+
+## Removing burned-in subtitles before re-styling
+
+If your source clip already has hard-burned subtitles in another language or style,
+the `clean` subcommand wraps [YaoFANGUK/video-subtitle-remover][vsr] (VSR) to strip
+them before transcription.
+
+[vsr]: https://github.com/YaoFANGUK/video-subtitle-remover
+
+### One-time setup
+
+```bash
+# Clone VSR next to this repo (or anywhere — see VSR_PATH below)
+cd ..
+git clone https://github.com/YaoFANGUK/video-subtitle-remover.git
+
+# Python env (3.11+). Heavy first install: PaddleOCR + Torch ≈ 3 GB
+cd video-subtitle-remover
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Set `VSR_PATH` if the clone isn't a sibling of this repo:
+
+```bash
+export VSR_PATH=/path/to/video-subtitle-remover
+export PYTHON_BIN=/path/to/video-subtitle-remover/.venv/bin/python   # optional
+```
+
+CPU mode works on macOS; CUDA/DirectML acceleration is Windows/Linux only.
+
+### Usage
+
+```bash
+# Auto-detect subtitle regions across the whole video
+tiktok-caps clean clip.mp4
+
+# Confine to specific regions (repeat -c for multiple regions). Coords are ymin,ymax,xmin,xmax in pixels.
+tiktok-caps clean clip.mp4 -c 900,1080,0,1080
+
+# Pick the inpaint backend (default sttn-auto — best general result)
+tiktok-caps clean clip.mp4 --inpaint lama
+```
+
+Default output: `<basename>-clean<ext>` next to the input. Then feed the
+cleaned MP4 into the normal pipeline:
+
+```bash
+tiktok-caps generate clip-clean.mp4 --vibe beasty
 ```
 
 ## Compound-layout schema
@@ -138,6 +189,7 @@ v0.1 ships:
 - Clean per-cue ASS rendering with both outline + box styles
 - Bundled 17 SIL-OFL/Apache font families (~3.6 MB)
 - localhost preview gallery with `@font-face`, scanlines, chromatic aberration, and karaoke word-highlight
-- 40 vitest specs (all green)
+- 46 vitest specs (all green)
+- `clean` subcommand wrapping VSR for stripping hard-burned subtitles before re-styling
 
 Deferred to v0.2: word-by-word highlight rendered in ASS, animation effects (bounce, earthquake, glitch motion), gradient text via SVG+alphamerge, video burn-in.
