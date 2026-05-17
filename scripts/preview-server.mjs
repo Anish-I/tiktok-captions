@@ -281,6 +281,7 @@ function renderHTML() {
     </div>
   </div>
   <div class="card-label">${escapeHtml(p.label)}</div>
+  <div class="card-id">${p.id}</div>
 </article>`.trim();
   }).join('\n');
 
@@ -301,12 +302,48 @@ body {
   min-height: 100vh;
 }
 header.top {
-  padding: 28px 40px 14px;
-  display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  padding: 36px 44px 20px;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
   border-bottom: 1px solid #1f1f22;
+  background:
+    radial-gradient(900px 280px at 12% -10%, rgba(94, 234, 212, 0.06), transparent 60%),
+    radial-gradient(700px 240px at 88% -10%, rgba(255, 107, 181, 0.05), transparent 60%);
 }
-header.top h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.2px; }
-header.top .subtitle { color: #888; font-size: 13px; }
+header.top h1 {
+  margin: 0 0 6px;
+  font-family: 'Anton', 'Bebas Neue', 'Roboto', sans-serif;
+  font-size: 40px;
+  font-weight: 400;             /* Anton is single-weight; the family already reads as black */
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1;
+  background: linear-gradient(95deg, #ffffff 0%, #d8d8da 55%, #5EEAD4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+header.top h1 .accent { color: #FF6BB5; -webkit-text-fill-color: #FF6BB5; }
+header.top .subtitle {
+  color: #9a9aa3;
+  font-size: 12.5px;
+  letter-spacing: 0.3px;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+header.top .meta {
+  text-align: right;
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
+}
+header.top .meta .pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #16161a;
+  border: 1px solid #2a2a30;
+  color: #cfcfd4;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
 .picker {
   padding: 22px 40px 8px;
   display: flex; gap: 10px; align-items: center;
@@ -431,11 +468,21 @@ header.top .subtitle { color: #888; font-size: 13px; }
 .card .overlay-copy:hover { background: #5a9eea; }
 .card .overlay-copy.copied { background: #2cc26f; }
 .card-label {
-  color: #e8e8ea;
+  color: #f2f2f5;
+  font-family: 'Montserrat', 'Roboto', -apple-system, sans-serif;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 800;
   text-align: center;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.card-id {
+  color: #6b6b76;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 10.5px;
+  text-align: center;
+  letter-spacing: 0.4px;
+  margin-top: -4px;
 }
 .card .caption-stack {
   position: relative;
@@ -462,10 +509,13 @@ header.top .subtitle { color: #888; font-size: 13px; }
 <body>
 <header class="top">
   <div>
-    <h1>tiktok-captions · preset gallery</h1>
-    <div class="subtitle">12 hand-tuned vibe presets · bundled SIL-OFL fonts · open a .ass in CapCut / Premiere / ffmpeg</div>
+    <h1>tiktok-captions <span class="accent">· preset gallery</span></h1>
+    <div class="subtitle">${PRESET_CATALOG.length} hand-tuned vibe presets · bundled SIL-OFL fonts · open a .ass in CapCut / Premiere / ffmpeg</div>
   </div>
-  <div class="subtitle">localhost · :${PORT}</div>
+  <div class="meta">
+    <span class="pill">localhost · :${PORT}</span>
+    <span class="subtitle">hover a tile for details</span>
+  </div>
 </header>
 
 <div class="picker">
